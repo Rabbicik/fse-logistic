@@ -1,42 +1,61 @@
 {
   "expo": {
-    "name": "fse-logistic",
+    "name": "FSE Logistic",
     "slug": "fse-logistic",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./fse.png",
     "scheme": "fselogistic",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "FSE Logistic potrzebuje dostępu do aparatu, aby skanować listy zaopatrzenia."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./fse.png",
+        "backgroundColor": "#0D0D1F"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.rabbicik.fselogistic",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./fse.png"
     },
     "plugins": [
       "expo-router",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "FSE Logistic potrzebuje dostępu do aparatu, aby skanować listy zaopatrzenia.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#0D0D1F",
+          "image": "./fse.png",
+          "imageWidth": 120
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6d5ea608-5901-46d7-bfa3-ea44853b0d3d"
+      }
     }
   }
 }
