@@ -45,7 +45,14 @@
           "imageWidth": 120
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-web-browser",
+      [
+        "react-native-document-scanner-plugin",
+        {
+          "cameraPermissionText": "FSE Logistic potrzebuje dostępu do aparatu, aby skanować listy zaopatrzenia."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

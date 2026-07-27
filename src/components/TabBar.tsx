@@ -6,10 +6,12 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
+import DocumentScanner from 'react-native-document-scanner-plugin';
 
 export default function TabBar() {
   const insets = useSafeAreaInsets();
@@ -17,18 +19,11 @@ export default function TabBar() {
   const pathname = usePathname();
   const fabScale = useRef(new Animated.Value(1)).current;
   const fabRotate = useRef(new Animated.Value(0)).current;
-  const isCameraOpen = pathname.startsWith('/camera');
 
-  useEffect(() => {
-    Animated.spring(fabScale, {
-      toValue: isCameraOpen ? 0.85 : 1,
-      useNativeDriver: true,
-      tension: 120,
-      friction: 8,
-    }).start();
-  }, [isCameraOpen, fabScale]);
+  // We no longer have an internal camera screen to track
+  const isCameraOpen = false; 
 
-  const handleFabPress = useCallback(() => {
+  const handleFabPress = useCallback(async () => {
     Animated.sequence([
       Animated.timing(fabRotate, {
         toValue: 1,
@@ -43,12 +38,24 @@ export default function TabBar() {
       }),
     ]).start();
 
-    if (isCameraOpen) {
-      router.back();
-    } else {
-      router.push('/camera');
+    try {
+      const { scannedImages, status } = await DocumentScanner.scanDocument({
+        croppedImageQuality: 100,
+        letUserAdjustCrop: true,
+      });
+
+      if (status === 'success' && scannedImages && scannedImages.length > 0) {
+        // Send the perfectly cropped image directly to analysis result
+        router.push({
+          pathname: '/camera/result',
+          params: { uri: scannedImages[0] },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Błąd kamery', 'Nie udało się uruchomić skanera dokumentów.');
     }
-  }, [isCameraOpen, router, fabRotate]);
+  }, [router, fabRotate]);
 
   const handleListsPress = useCallback(() => {
     router.push('/lists');
@@ -118,7 +125,7 @@ export default function TabBar() {
         >
           <Animated.View style={{ transform: [{ rotate: fabSpin }] }}>
             <Ionicons
-              name={isCameraOpen ? 'close' : 'camera'}
+              name={'camera'}
               size={28}
               color="#fff"
             />

@@ -12,7 +12,7 @@ interface AnalysisResult {
  * Próg jasności poniżej którego piksel uznawany jest za zamalowany.
  * 0 = czarny, 255 = biały
  */
-const FILL_THRESHOLD = 110;
+const FILL_THRESHOLD = 120;
 
 /*
  * Geometria wydrukowanej listy (znormalizowana do zakresu 0-1)
@@ -118,9 +118,6 @@ function sampleBrightness(
   return count > 0 ? total / count : 255;
 }
 
-/*
- * Sprawdza czy punkt (nx, ny) [znormalizowane 0-1] na obrazie jest zamalowany.
- */
 function isFilledAt(
   data: Uint8ClampedArray,
   nx: number,
@@ -130,7 +127,8 @@ function isFilledAt(
 ): boolean {
   const cx = nx * imgWidth;
   const cy = ny * imgHeight;
-  const brightness = sampleBrightness(data, cx, cy, imgWidth, 5);
+  // Zmniejszony promień do 2 px (5x5 px) na środku kwadratu – omija to ewentualne czarne obwódki pustych pól
+  const brightness = sampleBrightness(data, cx, cy, imgWidth, 2);
   return brightness < FILL_THRESHOLD;
 }
 

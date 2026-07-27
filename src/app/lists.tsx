@@ -297,7 +297,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   cardItems: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
+    marginTop: 4,
   },
   chipRow: {
     flexDirection: 'row',
@@ -322,7 +325,9 @@ const styles = StyleSheet.create({
   more: {
     color: 'rgba(255,255,255,0.3)',
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 8,
+    marginLeft: 4,
+    alignSelf: 'center',
   },
   empty: {
     flex: 1,
