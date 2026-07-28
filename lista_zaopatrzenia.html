@@ -4,508 +4,663 @@
   <meta charset="UTF-8" />
   <title>FSE Logistic – Lista Zaopatrzenia</title>
   <style>
-    @page {
-      size: A4 portrait;
-      margin: 8mm 10mm;
-    }
-
+    @page { size: A4 portrait; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 7.5pt;
+      font-size: 8.5pt;
       color: #111;
       background: #fff;
-      width: 190mm;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
-    /* ═══════════════════════════════════════════
-       NAGŁÓWEK
-    ═══════════════════════════════════════════ */
+    .list-page {
+      position: relative;
+      width: 190mm;
+      height: 277mm;
+      background: #fff;
+    }
+
+    .anchor {
+      position: absolute;
+      width: 7mm;
+      height: 7mm;
+      background: #000;
+      z-index: 10;
+    }
+    .anchor.tl { top: 0; left: 0; }
+    .anchor.tr { top: 0; right: 0; }
+    .anchor.bl { bottom: 0; left: 0; }
+    .anchor.br { bottom: 0; right: 0; }
+
+    .list-content {
+      padding: 12mm 8mm;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
+      height: 12mm;
+      margin-bottom: 6mm;
       border-bottom: 2px solid #111;
-      padding-bottom: 2.5mm;
-      margin-bottom: 3mm;
     }
-    .brand {
-      font-size: 14pt;
-      font-weight: 900;
-      letter-spacing: -0.5pt;
-    }
-    .subtitle {
-      font-size: 9pt;
-      font-weight: 600;
-      color: #444;
-    }
+    .brand { font-size: 16pt; font-weight: 900; letter-spacing: -0.5pt; }
+    .subtitle { font-size: 10pt; font-weight: 600; color: #444; }
 
-    /* ═══════════════════════════════════════════
-       WIERSZ ID ZASTĘPU
-    ═══════════════════════════════════════════ */
     .squad-row {
       display: flex;
       align-items: center;
-      gap: 3mm;
-      margin-bottom: 3.5mm;
-      padding: 2.5mm 3.5mm;
-      border: 1.3px solid #aaa;
+      height: 14mm;
+      margin-bottom: 6mm;
+      padding: 0 4mm;
+      border: 1.5px solid #aaa;
       border-radius: 1.5mm;
       background: #f5f5f5;
     }
-    .squad-label {
-      font-size: 9pt;
-      font-weight: 800;
-      min-width: 14mm;
-      letter-spacing: 0.3pt;
-    }
-    .squad-note {
-      font-size: 6.5pt;
-      color: #777;
-      margin-left: auto;
-      font-style: italic;
-    }
+    .squad-label { font-size: 10pt; font-weight: 800; width: 18mm; }
+    .squad-note { font-size: 7pt; color: #777; margin-left: auto; font-style: italic; }
 
-    /* ═══════════════════════════════════════════
-       KWADRACIK
-    ═══════════════════════════════════════════ */
     .cb {
       display: inline-block;
-      width: 4mm;
-      height: 4mm;
-      border: 1.2px solid #333;
-      margin: 0 0.4mm;
+      width: 3.5mm;
+      height: 3.5mm;
+      border: 1px solid #333;
+      margin-right: 0.5mm;
       vertical-align: middle;
       background: #fff;
-      flex-shrink: 0;
     }
+    .cb:last-child { margin-right: 0; }
+    
     .cb-lg {
-      width: 5mm;
-      height: 5mm;
-      margin: 0 0.7mm;
+      width: 6mm;
+      height: 6mm;
+      margin-right: 1.5mm;
+      border-width: 1.5px;
     }
 
-    /* ═══════════════════════════════════════════
-       3 KOLUMNY
-    ═══════════════════════════════════════════ */
     .columns {
+      flex: 1;
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 0 4mm;
-      align-items: start;
+      gap: 0 5mm;
     }
-    .col {
-      border-right: 0.5px solid #ddd;
-      padding-right: 3mm;
-    }
-    .col:last-child {
-      border-right: none;
-      padding-right: 0;
-    }
+    .col { border-right: 0.5px dotted #ccc; padding-right: 2.5mm; }
+    .col:last-child { border-right: none; padding-right: 0; }
 
-    /* ═══════════════════════════════════════════
-       NAGŁÓWEK KATEGORII
-    ═══════════════════════════════════════════ */
     .cat {
-      font-size: 6.8pt;
+      height: 5.5mm;
+      margin-top: 2.5mm;
+      font-size: 7pt;
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 1.2pt;
-      color: #333;
-      background: #ebebeb;
-      padding: 1.5mm 2mm;
-      margin-top: 3mm;
-      margin-bottom: 0.5mm;
-      border-radius: 1mm;
-    }
-    .col .cat:first-child {
-      margin-top: 0;
+      color: #222;
+      background: #eaeaea;
+      padding: 0.5mm 1.5mm;
+      border-radius: 0.8mm;
+      display: flex;
+      align-items: center;
     }
 
-    /* ═══════════════════════════════════════════
-       WIERSZ PRODUKTU
-    ═══════════════════════════════════════════ */
     .item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.2mm 1mm 1.2mm 2mm;
-      border-bottom: 0.4px solid #e8e8e8;
-      gap: 2mm;
-      min-height: 7mm;
+      height: 6.2mm;
+      border-bottom: 0.5px solid #eee;
     }
-    .item-name {
-      font-size: 7.5pt;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.3;
+    .item-marker {
+      display: inline-block;
+      width: 1.8mm;
+      height: 1.8mm;
+      background: #000;
+      margin-right: 1.2mm;
+      vertical-align: middle;
     }
-    .item-right {
-      display: flex;
-      align-items: center;
-      gap: 1.5mm;
-      flex-shrink: 0;
-    }
-    .boxes {
-      display: flex;
-      align-items: center;
-    }
-    .unit {
-      font-size: 6pt;
-      color: #666;
-      white-space: nowrap;
-      min-width: 10mm;
-      text-align: left;
-    }
+    .item-name { font-size: 7pt; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 0.5mm; display: flex; align-items: center; }
+    .item-right { display: flex; align-items: center; width: 28mm; justify-content: flex-end; }
+    .boxes { display: flex; align-items: center; }
+    .unit { font-size: 5pt; color: #666; margin-left: 1mm; width: 6.5mm; text-align: left; white-space: nowrap; }
 
-    /* ═══════════════════════════════════════════
-       STOPKA
-    ═══════════════════════════════════════════ */
     .footer {
       margin-top: 4mm;
-      font-size: 6.5pt;
-      color: #bbb;
-      text-align: center;
-      border-top: 0.5px solid #e0e0e0;
       padding-top: 2mm;
-    }
-
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      font-size: 7.5pt;
+      color: #999;
+      text-align: center;
+      border-top: 1px solid #eee;
     }
   </style>
 </head>
 <body>
+  <div class="list-page">
+    <div class="anchor tl"></div>
+    <div class="anchor tr"></div>
+    <div class="anchor bl"></div>
+    <div class="anchor br"></div>
+    
+    <div class="list-content">
+      <div class="page-header">
+        <span class="brand">FSE Logistic</span>
+        <span class="subtitle">Lista Zaopatrzenia</span>
+      </div>
 
-  <!-- NAGŁÓWEK -->
-  <div class="page-header">
-    <span class="brand">FSE Logistic</span>
-    <span class="subtitle">Lista Zaopatrzenia</span>
-  </div>
+      <div class="squad-row">
+        <span class="squad-label">Zastęp</span>
+        <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
+        <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
+        <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
+        <span class="cb cb-lg"></span>
+        <span class="squad-note">zamaluj kwadraciki = nr (binarnie)</span>
+      </div>
 
-  <!-- ID ZASTĘPU -->
-  <div class="squad-row">
-    <span class="squad-label">Zastęp</span>
-    <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
-    <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
-    <span class="cb cb-lg"></span><span class="cb cb-lg"></span><span class="cb cb-lg"></span>
-    <span class="cb cb-lg"></span>
-    <span class="squad-note">zamaluj kwadraciki = numer zastępu (binarnie)</span>
-  </div>
-
-  <!-- 3 KOLUMNY -->
-  <div class="columns">
-
-    <!-- ══════════════════ KOLUMNA 1 ══════════════════ -->
-    <div class="col">
-
-      <div class="cat">Napoje</div>
-
+      <div class="columns">
+        <div class="col">
+      <div class="cat" style="margin-top: 0">Owoce</div>
       <div class="item">
-        <span class="item-name">Woda niegazowana</span>
+        <span class="item-name"><span class="item-marker"></span>Jabłka</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 0,5 L</span>
+          <span class="unit">/ 2 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Woda gazowana</span>
+        <span class="item-name"><span class="item-marker"></span>Banany</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1,5 L</span>
+          <span class="unit">/ 2 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Sok owocowy</span>
+        <span class="item-name"><span class="item-marker"></span>Nektarynka</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 L</span>
+          <span class="unit">/ 2 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Herbata ekspresowa</span>
+        <span class="item-name"><span class="item-marker"></span>Arbuz</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 100 szt.</span>
+          <span class="unit">/ 1 kg</span>
         </div>
       </div>
-
-      <div class="cat">Mięso</div>
-
+      <div class="cat" >Warzywa</div>
       <div class="item">
-        <span class="item-name">Pierś z kurczaka</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Kiełbasa</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Szynka / Wędlina</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
-        </div>
-      </div>
-
-      <div class="cat">Pieczywo</div>
-
-      <div class="item">
-        <span class="item-name">Chleb</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 szt.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Bułki</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 6 szt.</span>
-        </div>
-      </div>
-
-      <div class="cat">Nabiał</div>
-
-      <div class="item">
-        <span class="item-name">Masło</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Mleko</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 L</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Ser żółty</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Jajka</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 10 szt.</span>
-        </div>
-      </div>
-
-    </div>
-    <!-- koniec kolumny 1 -->
-
-    <!-- ══════════════════ KOLUMNA 2 ══════════════════ -->
-    <div class="col">
-
-      <div class="cat">Suche / Konserwy</div>
-
-      <div class="item">
-        <span class="item-name">Makaron</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 400 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Ryż</span>
+        <span class="item-name"><span class="item-marker"></span>Ziemniaki</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
           <span class="unit">/ 500 g</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Kasza</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 400 g</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Konserwy mięsne</span>
+        <span class="item-name"><span class="item-marker"></span>Cebula</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
           <span class="unit">/ 1 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Fasola / Groch</span>
+        <span class="item-name"><span class="item-marker"></span>Marchew</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 400 g</span>
+          <span class="unit">/ 2 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Przecier pomidorowy</span>
+        <span class="item-name"><span class="item-marker"></span>Pietruszka</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 500 g</span>
-        </div>
-      </div>
-
-      <div class="cat">Słodycze / Przekąski</div>
-
-      <div class="item">
-        <span class="item-name">Czekolada</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 100 g</span>
+          <span class="unit">/ 1 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Herbatniki / Ciastka</span>
+        <span class="item-name"><span class="item-marker"></span>Pomidory</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 200 g</span>
+          <span class="unit">/ 2 szt.</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Dżem / Nutella</span>
+        <span class="item-name"><span class="item-marker"></span>Ogórki</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 2 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Papryka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Czosnek</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 gł.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Sałata mix</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Sałata (główka)</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Pieczarki</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
           <span class="unit">/ 250 g</span>
         </div>
       </div>
-
-      <div class="cat">Warzywa i Owoce</div>
-
       <div class="item">
-        <span class="item-name">Owoce (mix)</span>
+        <span class="item-name"><span class="item-marker"></span>Brokuły</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="cat" >Pieczywo</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Chleb</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Chleb tostowy</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Bułki</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 4 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Tortilla</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+    </div>
+        <div class="col">
+      <div class="cat" style="margin-top: 0">Mięso</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Pierś z kurczaka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Mięso mielone</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Schab</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Udka z kurczaka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 2 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Skrzydełka z kurczaka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Wątróbka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Boczek</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 200 g</span>
+        </div>
+      </div>
+      <div class="cat" >Wędliny</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Parówki</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 4 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Szynka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 150 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Kiełbasa</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 2 szt.</span>
+        </div>
+      </div>
+      <div class="cat" >Nabiał</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Mleko</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 L</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Masło</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Jajka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 4 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Ser żółty (plasterki)</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 150 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Ser żółty (kostka)</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 250 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Twaróg</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 250 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Śmietana 18%</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Śmietanka 30%</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Jogurt naturalny</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Serek wiejski</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Jogurt smakowe</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 2 szt.</span>
+        </div>
+      </div>
+    </div>
+        <div class="col">
+      <div class="cat" style="margin-top: 0">Produkty sypkie</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Mąka pszenna</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
           <span class="unit">/ 1 kg</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Warzywa (mix)</span>
+        <span class="item-name"><span class="item-marker"></span>Cukier</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
           <span class="unit">/ 1 kg</span>
         </div>
       </div>
       <div class="item">
-        <span class="item-name">Ziemniaki</span>
+        <span class="item-name"><span class="item-marker"></span>Makaron świderki</span>
         <div class="item-right">
           <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 2 kg</span>
+          <span class="unit">/ 500 g</span>
         </div>
       </div>
-
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Makaron spaghetti</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Ryż</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Kasza gryczana</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Kasza jęczmienna</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 400 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Płatki owsiane</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Płatki na mleko</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Bułka tarta</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Olej</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 L</span>
+        </div>
+      </div>
+      <div class="cat" >Konserwy</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Passata</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 500 g</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Groszek</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Kukurydza</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Tuńczyk</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Fasola</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="cat" >Sosy</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Ketchup</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Majonez</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Musztarda</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 szt.</span>
+        </div>
+      </div>
+      <div class="cat" >Przyprawy</div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Sól</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Pieprz</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Papryka słodka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Papryka ostra</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Czosnek granulowany</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Zioła prowansalskie</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Oregano</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
+      <div class="item">
+        <span class="item-name"><span class="item-marker"></span>Przyprawa do kurczaka</span>
+        <div class="item-right">
+          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
+          <span class="unit">/ 1 op.</span>
+        </div>
+      </div>
     </div>
-    <!-- koniec kolumny 2 -->
-
-    <!-- ══════════════════ KOLUMNA 3 ══════════════════ -->
-    <div class="col">
-
-      <div class="cat">Przyprawy</div>
-
-      <div class="item">
-        <span class="item-name">Sól / Pieprz / Przyp.</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 kpl.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Olej / Oliwa</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 500 ml</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Sos / Ketchup</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 szt.</span>
-        </div>
       </div>
 
-      <div class="cat">Sprzęt jednorazowy</div>
-
-      <div class="item">
-        <span class="item-name">Talerze jednorazowe</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 10 szt.</span>
-        </div>
+      <div class="footer">
+        1 kratka = 1 jednostka (z reguły porcja dla 2 os.) &nbsp;·&nbsp; Skanuj przez FSE Logistic
       </div>
-      <div class="item">
-        <span class="item-name">Sztućce jednorazowe</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 10 kpl.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Kubki jednorazowe</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 10 szt.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Folia aluminiowa</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 rol.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Gaz do kuchenki</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 szt.</span>
-        </div>
-      </div>
-
-      <div class="cat">Higieniczne</div>
-
-      <div class="item">
-        <span class="item-name">Worki na śmieci</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 10 szt.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Mydło / Żel</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 1 szt.</span>
-        </div>
-      </div>
-      <div class="item">
-        <span class="item-name">Papier toaletowy</span>
-        <div class="item-right">
-          <div class="boxes"><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span><span class="cb"></span></div>
-          <span class="unit">/ 4 rol.</span>
-        </div>
-      </div>
-
     </div>
-    <!-- koniec kolumny 3 -->
-
   </div>
-  <!-- koniec 3 kolumn -->
-
-  <div class="footer">
-    Zamaluj długopisem kwadraciki ■ &nbsp;·&nbsp; Jedna kratka = 1 jednostka &nbsp;·&nbsp; Skanuj w FSE Logistic
-  </div>
-
 </body>
 </html>

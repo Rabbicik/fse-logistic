@@ -38,7 +38,7 @@ function AppShell() {
           options={{ animation: 'slide_from_bottom' }}
         />
       </Stack>
-      <TabBar />
+      {!hideTabBar && <TabBar />}
     </View>
   );
 }

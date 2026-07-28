@@ -1,85 +1,87 @@
-import { ListItem, Squad } from '../types';
-
-/*
- * Definicja artykułów listy zaopatrzenia FSE.
- * column: numer kolumny wydruku (1=lewa, 2=środek, 3=prawa)
- * colRow: wiersz wewnątrz kolumny (0-based, licząc od pierwszego produktu, pomijając nagłówki kategorii)
- * Układ odpowiada plikowi lista_zaopatrzenia.html (trzy kolumny na jednej stronie A4)
- */
-export const LIST_ITEMS: ListItem[] = [
-  // ── KOLUMNA 1: Napoje, Mięso, Pieczywo, Nabiał ──
-  { id: 'water_still',  name: 'Woda niegazowana',       category: 'Napoje',            rowIndex: 0,  maxDots: 5, unit: '0,5 L',   column: 1, colRow: 0 },
-  { id: 'water_sparkling', name: 'Woda gazowana',        category: 'Napoje',            rowIndex: 1,  maxDots: 5, unit: '1,5 L',   column: 1, colRow: 1 },
-  { id: 'juice',        name: 'Sok owocowy',             category: 'Napoje',            rowIndex: 2,  maxDots: 5, unit: '1 L',     column: 1, colRow: 2 },
-  { id: 'tea',          name: 'Herbata ekspresowa',      category: 'Napoje',            rowIndex: 3,  maxDots: 5, unit: '100 szt.',column: 1, colRow: 3 },
-  { id: 'chicken',      name: 'Pierś z kurczaka',        category: 'Mięso',             rowIndex: 4,  maxDots: 5, unit: '200 g',   column: 1, colRow: 4 },
-  { id: 'sausage',      name: 'Kiełbasa',                category: 'Mięso',             rowIndex: 5,  maxDots: 5, unit: '200 g',   column: 1, colRow: 5 },
-  { id: 'ham',          name: 'Szynka / Wędlina',        category: 'Mięso',             rowIndex: 6,  maxDots: 5, unit: '200 g',   column: 1, colRow: 6 },
-  { id: 'bread',        name: 'Chleb',                   category: 'Pieczywo',          rowIndex: 7,  maxDots: 5, unit: '1 szt.', column: 1, colRow: 7 },
-  { id: 'rolls',        name: 'Bułki',                   category: 'Pieczywo',          rowIndex: 8,  maxDots: 5, unit: '6 szt.', column: 1, colRow: 8 },
-  { id: 'butter',       name: 'Masło',                   category: 'Nabiał',            rowIndex: 9,  maxDots: 5, unit: '200 g',   column: 1, colRow: 9 },
-  { id: 'milk',         name: 'Mleko',                   category: 'Nabiał',            rowIndex: 10, maxDots: 5, unit: '1 L',     column: 1, colRow: 10 },
-  { id: 'cheese',       name: 'Ser żółty',               category: 'Nabiał',            rowIndex: 11, maxDots: 5, unit: '200 g',   column: 1, colRow: 11 },
-  { id: 'eggs',         name: 'Jajka',                   category: 'Nabiał',            rowIndex: 12, maxDots: 5, unit: '10 szt.',column: 1, colRow: 12 },
-
-  // ── KOLUMNA 2: Suche/Konserwy, Słodycze, Warzywa ──
-  { id: 'pasta',        name: 'Makaron',                 category: 'Suche / Konserwy',  rowIndex: 13, maxDots: 5, unit: '400 g',   column: 2, colRow: 0 },
-  { id: 'rice',         name: 'Ryż',                     category: 'Suche / Konserwy',  rowIndex: 14, maxDots: 5, unit: '500 g',   column: 2, colRow: 1 },
-  { id: 'groats',       name: 'Kasza',                   category: 'Suche / Konserwy',  rowIndex: 15, maxDots: 5, unit: '400 g',   column: 2, colRow: 2 },
-  { id: 'cans',         name: 'Konserwy mięsne',         category: 'Suche / Konserwy',  rowIndex: 16, maxDots: 5, unit: '1 szt.', column: 2, colRow: 3 },
-  { id: 'beans',        name: 'Fasola / Groch',          category: 'Suche / Konserwy',  rowIndex: 17, maxDots: 5, unit: '400 g',   column: 2, colRow: 4 },
-  { id: 'tomato',       name: 'Przecier pomidorowy',     category: 'Suche / Konserwy',  rowIndex: 18, maxDots: 5, unit: '500 g',   column: 2, colRow: 5 },
-  { id: 'chocolate',    name: 'Czekolada',               category: 'Słodycze / Przekąski', rowIndex: 19, maxDots: 5, unit: '100 g', column: 2, colRow: 6 },
-  { id: 'crackers',     name: 'Herbatniki / Ciastka',    category: 'Słodycze / Przekąski', rowIndex: 20, maxDots: 5, unit: '200 g', column: 2, colRow: 7 },
-  { id: 'jam',          name: 'Dżem / Nutella',          category: 'Słodycze / Przekąski', rowIndex: 21, maxDots: 5, unit: '250 g', column: 2, colRow: 8 },
-  { id: 'fruit',        name: 'Owoce (mix)',             category: 'Warzywa i Owoce',   rowIndex: 22, maxDots: 5, unit: '1 kg',   column: 2, colRow: 9 },
-  { id: 'vegetables',   name: 'Warzywa (mix)',           category: 'Warzywa i Owoce',   rowIndex: 23, maxDots: 5, unit: '1 kg',   column: 2, colRow: 10 },
-  { id: 'potato',       name: 'Ziemniaki',               category: 'Warzywa i Owoce',   rowIndex: 24, maxDots: 5, unit: '2 kg',   column: 2, colRow: 11 },
-
-  // ── KOLUMNA 3: Przyprawy, Sprzęt, Higieniczne ──
-  { id: 'salt',         name: 'Sól / Pieprz / Przyp.',  category: 'Przyprawy',         rowIndex: 25, maxDots: 5, unit: '1 kpl.', column: 3, colRow: 0 },
-  { id: 'oil',          name: 'Olej / Oliwa',           category: 'Przyprawy',         rowIndex: 26, maxDots: 5, unit: '500 ml', column: 3, colRow: 1 },
-  { id: 'sauce',        name: 'Sos / Ketchup',          category: 'Przyprawy',         rowIndex: 27, maxDots: 5, unit: '1 szt.', column: 3, colRow: 2 },
-  { id: 'plates',       name: 'Talerze jednorazowe',    category: 'Sprzęt jednorazowy',rowIndex: 28, maxDots: 5, unit: '10 szt.',column: 3, colRow: 3 },
-  { id: 'cutlery',      name: 'Sztućce jednorazowe',    category: 'Sprzęt jednorazowy',rowIndex: 29, maxDots: 5, unit: '10 kpl.',column: 3, colRow: 4 },
-  { id: 'cups',         name: 'Kubki jednorazowe',      category: 'Sprzęt jednorazowy',rowIndex: 30, maxDots: 5, unit: '10 szt.',column: 3, colRow: 5 },
-  { id: 'foil',         name: 'Folia aluminiowa',       category: 'Sprzęt jednorazowy',rowIndex: 31, maxDots: 5, unit: '1 rol.', column: 3, colRow: 6 },
-  { id: 'gas',          name: 'Gaz do kuchenki',        category: 'Sprzęt jednorazowy',rowIndex: 32, maxDots: 5, unit: '1 szt.', column: 3, colRow: 7 },
-  { id: 'trash_bags',   name: 'Worki na śmieci',        category: 'Higieniczne',       rowIndex: 33, maxDots: 5, unit: '10 szt.',column: 3, colRow: 8 },
-  { id: 'soap',         name: 'Mydło / Żel',            category: 'Higieniczne',       rowIndex: 34, maxDots: 5, unit: '1 szt.', column: 3, colRow: 9 },
-  { id: 'toilet_paper', name: 'Papier toaletowy',       category: 'Higieniczne',       rowIndex: 35, maxDots: 5, unit: '4 rol.', column: 3, colRow: 10 },
-];
-
-export const CATEGORIES = [
-  'Napoje',
-  'Mięso',
-  'Pieczywo',
-  'Nabiał',
-  'Suche / Konserwy',
-  'Słodycze / Przekąski',
-  'Warzywa i Owoce',
-  'Przyprawy',
-  'Sprzęt jednorazowy',
-  'Higieniczne',
-];
-
-export const SQUAD_COLORS = [
-  '#FF6B35',
-  '#F7C59F',
-  '#1DAFEC',
-  '#A8E6CE',
-  '#FF8B94',
-  '#B4A7D6',
-  '#FFD93D',
-  '#6BCB77',
-];
-
-export const DEFAULT_SQUADS: Squad[] = [
-  { id: 1, name: 'Zastęp 1', color: SQUAD_COLORS[0] },
-  { id: 2, name: 'Zastęp 2', color: SQUAD_COLORS[1] },
-  { id: 3, name: 'Zastęp 3', color: SQUAD_COLORS[2] },
-  { id: 4, name: 'Zastęp 4', color: SQUAD_COLORS[3] },
-  { id: 5, name: 'Zastęp 5', color: SQUAD_COLORS[4] },
-];
+import { ListItem } from '../types';
 
 export const ID_DOT_COUNT = 10;
+
+export const CATEGORIES = [
+  'Owoce',
+  'Warzywa',
+  'Pieczywo',
+  'Mięso',
+  'Wędliny',
+  'Nabiał',
+  'Produkty sypkie',
+  'Konserwy',
+  'Sosy',
+  'Przyprawy',
+];
+
+export const LIST_ITEMS: ListItem[] = [
+  { id: 'jablka', name: 'Jabłka', category: 'Owoce', rowIndex: 0, maxDots: 5, unit: '2 szt.', column: 1, colRow: 0 },
+  { id: 'banany', name: 'Banany', category: 'Owoce', rowIndex: 1, maxDots: 5, unit: '2 szt.', column: 1, colRow: 1 },
+  { id: 'nektarynka', name: 'Nektarynka', category: 'Owoce', rowIndex: 2, maxDots: 5, unit: '2 szt.', column: 1, colRow: 2 },
+  { id: 'arbuz', name: 'Arbuz', category: 'Owoce', rowIndex: 3, maxDots: 5, unit: '1 kg', column: 1, colRow: 3 },
+  { id: 'ziemniaki', name: 'Ziemniaki', category: 'Warzywa', rowIndex: 4, maxDots: 5, unit: '500 g', column: 1, colRow: 4 },
+  { id: 'cebula', name: 'Cebula', category: 'Warzywa', rowIndex: 5, maxDots: 5, unit: '1 szt.', column: 1, colRow: 5 },
+  { id: 'marchew', name: 'Marchew', category: 'Warzywa', rowIndex: 6, maxDots: 5, unit: '2 szt.', column: 1, colRow: 6 },
+  { id: 'pietruszka', name: 'Pietruszka', category: 'Warzywa', rowIndex: 7, maxDots: 5, unit: '1 szt.', column: 1, colRow: 7 },
+  { id: 'pomidory', name: 'Pomidory', category: 'Warzywa', rowIndex: 8, maxDots: 5, unit: '2 szt.', column: 1, colRow: 8 },
+  { id: 'ogorki', name: 'Ogórki', category: 'Warzywa', rowIndex: 9, maxDots: 5, unit: '2 szt.', column: 1, colRow: 9 },
+  { id: 'papryka', name: 'Papryka', category: 'Warzywa', rowIndex: 10, maxDots: 5, unit: '1 szt.', column: 1, colRow: 10 },
+  { id: 'czosnek', name: 'Czosnek', category: 'Warzywa', rowIndex: 11, maxDots: 5, unit: '1 gł.', column: 1, colRow: 11 },
+  { id: 'salata_mix', name: 'Sałata mix', category: 'Warzywa', rowIndex: 12, maxDots: 5, unit: '1 op.', column: 1, colRow: 12 },
+  { id: 'salata_glowka', name: 'Sałata (główka)', category: 'Warzywa', rowIndex: 13, maxDots: 5, unit: '1 szt.', column: 1, colRow: 13 },
+  { id: 'pieczarki', name: 'Pieczarki', category: 'Warzywa', rowIndex: 14, maxDots: 5, unit: '250 g', column: 1, colRow: 14 },
+  { id: 'brokuly', name: 'Brokuły', category: 'Warzywa', rowIndex: 15, maxDots: 5, unit: '1 szt.', column: 1, colRow: 15 },
+  { id: 'chleb', name: 'Chleb', category: 'Pieczywo', rowIndex: 16, maxDots: 5, unit: '1 szt.', column: 1, colRow: 16 },
+  { id: 'chleb_tostowy', name: 'Chleb tostowy', category: 'Pieczywo', rowIndex: 17, maxDots: 5, unit: '1 op.', column: 1, colRow: 17 },
+  { id: 'bulki', name: 'Bułki', category: 'Pieczywo', rowIndex: 18, maxDots: 5, unit: '4 szt.', column: 1, colRow: 18 },
+  { id: 'tortilla', name: 'Tortilla', category: 'Pieczywo', rowIndex: 19, maxDots: 5, unit: '1 op.', column: 1, colRow: 19 },
+  { id: 'piers_z_kurczaka', name: 'Pierś z kurczaka', category: 'Mięso', rowIndex: 20, maxDots: 5, unit: '400 g', column: 2, colRow: 0 },
+  { id: 'mieso_mielone', name: 'Mięso mielone', category: 'Mięso', rowIndex: 21, maxDots: 5, unit: '400 g', column: 2, colRow: 1 },
+  { id: 'schab', name: 'Schab', category: 'Mięso', rowIndex: 22, maxDots: 5, unit: '400 g', column: 2, colRow: 2 },
+  { id: 'udka_z_kurczaka', name: 'Udka z kurczaka', category: 'Mięso', rowIndex: 23, maxDots: 5, unit: '2 szt.', column: 2, colRow: 3 },
+  { id: 'skrzydelka_z_kurczaka', name: 'Skrzydełka z kurczaka', category: 'Mięso', rowIndex: 24, maxDots: 5, unit: '500 g', column: 2, colRow: 4 },
+  { id: 'watrobka', name: 'Wątróbka', category: 'Mięso', rowIndex: 25, maxDots: 5, unit: '400 g', column: 2, colRow: 5 },
+  { id: 'boczek', name: 'Boczek', category: 'Mięso', rowIndex: 26, maxDots: 5, unit: '200 g', column: 2, colRow: 6 },
+  { id: 'parowki', name: 'Parówki', category: 'Wędliny', rowIndex: 27, maxDots: 5, unit: '4 szt.', column: 2, colRow: 7 },
+  { id: 'szynka', name: 'Szynka', category: 'Wędliny', rowIndex: 28, maxDots: 5, unit: '150 g', column: 2, colRow: 8 },
+  { id: 'kielbasa', name: 'Kiełbasa', category: 'Wędliny', rowIndex: 29, maxDots: 5, unit: '2 szt.', column: 2, colRow: 9 },
+  { id: 'mleko', name: 'Mleko', category: 'Nabiał', rowIndex: 30, maxDots: 5, unit: '1 L', column: 2, colRow: 10 },
+  { id: 'maslo', name: 'Masło', category: 'Nabiał', rowIndex: 31, maxDots: 5, unit: '1 szt.', column: 2, colRow: 11 },
+  { id: 'jajka', name: 'Jajka', category: 'Nabiał', rowIndex: 32, maxDots: 5, unit: '4 szt.', column: 2, colRow: 12 },
+  { id: 'ser_zolty_plasterki', name: 'Ser żółty (plasterki)', category: 'Nabiał', rowIndex: 33, maxDots: 5, unit: '150 g', column: 2, colRow: 13 },
+  { id: 'ser_zolty_kostka', name: 'Ser żółty (kostka)', category: 'Nabiał', rowIndex: 34, maxDots: 5, unit: '250 g', column: 2, colRow: 14 },
+  { id: 'twarog', name: 'Twaróg', category: 'Nabiał', rowIndex: 35, maxDots: 5, unit: '250 g', column: 2, colRow: 15 },
+  { id: 'smietana_18', name: 'Śmietana 18%', category: 'Nabiał', rowIndex: 36, maxDots: 5, unit: '1 op.', column: 2, colRow: 16 },
+  { id: 'smietanka_30', name: 'Śmietanka 30%', category: 'Nabiał', rowIndex: 37, maxDots: 5, unit: '1 op.', column: 2, colRow: 17 },
+  { id: 'jogurt_naturalny', name: 'Jogurt naturalny', category: 'Nabiał', rowIndex: 38, maxDots: 5, unit: '1 op.', column: 2, colRow: 18 },
+  { id: 'serek_wiejski', name: 'Serek wiejski', category: 'Nabiał', rowIndex: 39, maxDots: 5, unit: '1 op.', column: 2, colRow: 19 },
+  { id: 'jogurt_smakowe', name: 'Jogurt smakowe', category: 'Nabiał', rowIndex: 40, maxDots: 5, unit: '2 szt.', column: 2, colRow: 20 },
+  { id: 'maka_pszenna', name: 'Mąka pszenna', category: 'Produkty sypkie', rowIndex: 41, maxDots: 5, unit: '1 kg', column: 3, colRow: 0 },
+  { id: 'cukier', name: 'Cukier', category: 'Produkty sypkie', rowIndex: 42, maxDots: 5, unit: '1 kg', column: 3, colRow: 1 },
+  { id: 'makaron_swiderki', name: 'Makaron świderki', category: 'Produkty sypkie', rowIndex: 43, maxDots: 5, unit: '500 g', column: 3, colRow: 2 },
+  { id: 'makaron_spaghetti', name: 'Makaron spaghetti', category: 'Produkty sypkie', rowIndex: 44, maxDots: 5, unit: '500 g', column: 3, colRow: 3 },
+  { id: 'ryz', name: 'Ryż', category: 'Produkty sypkie', rowIndex: 45, maxDots: 5, unit: '400 g', column: 3, colRow: 4 },
+  { id: 'kasza_gryczana', name: 'Kasza gryczana', category: 'Produkty sypkie', rowIndex: 46, maxDots: 5, unit: '400 g', column: 3, colRow: 5 },
+  { id: 'kasza_jeczmienna', name: 'Kasza jęczmienna', category: 'Produkty sypkie', rowIndex: 47, maxDots: 5, unit: '400 g', column: 3, colRow: 6 },
+  { id: 'platki_owsiane', name: 'Płatki owsiane', category: 'Produkty sypkie', rowIndex: 48, maxDots: 5, unit: '500 g', column: 3, colRow: 7 },
+  { id: 'platki_na_mleko', name: 'Płatki na mleko', category: 'Produkty sypkie', rowIndex: 49, maxDots: 5, unit: '500 g', column: 3, colRow: 8 },
+  { id: 'bulka_tarta', name: 'Bułka tarta', category: 'Produkty sypkie', rowIndex: 50, maxDots: 5, unit: '500 g', column: 3, colRow: 9 },
+  { id: 'olej', name: 'Olej', category: 'Produkty sypkie', rowIndex: 51, maxDots: 5, unit: '1 L', column: 3, colRow: 10 },
+  { id: 'passata', name: 'Passata', category: 'Konserwy', rowIndex: 52, maxDots: 5, unit: '500 g', column: 3, colRow: 11 },
+  { id: 'groszek', name: 'Groszek', category: 'Konserwy', rowIndex: 53, maxDots: 5, unit: '1 op.', column: 3, colRow: 12 },
+  { id: 'kukurydza', name: 'Kukurydza', category: 'Konserwy', rowIndex: 54, maxDots: 5, unit: '1 op.', column: 3, colRow: 13 },
+  { id: 'tunczyk', name: 'Tuńczyk', category: 'Konserwy', rowIndex: 55, maxDots: 5, unit: '1 op.', column: 3, colRow: 14 },
+  { id: 'fasola', name: 'Fasola', category: 'Konserwy', rowIndex: 56, maxDots: 5, unit: '1 op.', column: 3, colRow: 15 },
+  { id: 'ketchup', name: 'Ketchup', category: 'Sosy', rowIndex: 57, maxDots: 5, unit: '1 szt.', column: 3, colRow: 16 },
+  { id: 'majonez', name: 'Majonez', category: 'Sosy', rowIndex: 58, maxDots: 5, unit: '1 szt.', column: 3, colRow: 17 },
+  { id: 'musztarda', name: 'Musztarda', category: 'Sosy', rowIndex: 59, maxDots: 5, unit: '1 szt.', column: 3, colRow: 18 },
+  { id: 'sol', name: 'Sól', category: 'Przyprawy', rowIndex: 60, maxDots: 5, unit: '1 op.', column: 3, colRow: 19 },
+  { id: 'pieprz', name: 'Pieprz', category: 'Przyprawy', rowIndex: 61, maxDots: 5, unit: '1 op.', column: 3, colRow: 20 },
+  { id: 'papryka_slodka', name: 'Papryka słodka', category: 'Przyprawy', rowIndex: 62, maxDots: 5, unit: '1 op.', column: 3, colRow: 21 },
+  { id: 'papryka_ostra', name: 'Papryka ostra', category: 'Przyprawy', rowIndex: 63, maxDots: 5, unit: '1 op.', column: 3, colRow: 22 },
+  { id: 'czosnek_granulowany', name: 'Czosnek granulowany', category: 'Przyprawy', rowIndex: 64, maxDots: 5, unit: '1 op.', column: 3, colRow: 23 },
+  { id: 'ziola_prowansalskie', name: 'Zioła prowansalskie', category: 'Przyprawy', rowIndex: 65, maxDots: 5, unit: '1 op.', column: 3, colRow: 24 },
+  { id: 'oregano', name: 'Oregano', category: 'Przyprawy', rowIndex: 66, maxDots: 5, unit: '1 op.', column: 3, colRow: 25 },
+  { id: 'przyprawa_do_kurczaka', name: 'Przyprawa do kurczaka', category: 'Przyprawy', rowIndex: 67, maxDots: 5, unit: '1 op.', column: 3, colRow: 26 },
+];

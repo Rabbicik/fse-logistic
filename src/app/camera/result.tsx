@@ -15,19 +15,7 @@ import { useScans } from '../../hooks/useScans';
 import ScanResult from '../../components/ui/ScanResult';
 
 export default function ResultScreen() {
-  const params = useLocalSearchParams<{
-    uri: string;
-    width: string;
-    height: string;
-    tlx: string;
-    tly: string;
-    trx: string;
-    try_: string;
-    blx: string;
-    bly: string;
-    brx: string;
-    bry: string;
-  }>();
+  const params = useLocalSearchParams<{ uri: string }>();
   const router = useRouter();
   const { squads, addScan } = useScans();
 
@@ -40,37 +28,17 @@ export default function ResultScreen() {
 
   async function processImage() {
     try {
-      const { uri, width: wStr, height: hStr, tlx, tly, brx, bry } = params;
-      const w = parseInt(wStr ?? '1000', 10);
-      const h = parseInt(hStr ?? '1333', 10);
+      const { uri } = params;
+      if (!uri) throw new Error('Brak zdjęcia');
 
-      const originX = parseInt(tlx ?? '0', 10);
-      const originY = parseInt(tly ?? '0', 10);
-      const cropW = parseInt(brx ?? wStr ?? '1000', 10) - originX;
-      const cropH = parseInt(bry ?? hStr ?? '1333', 10) - originY;
-
-      const cropped = await ImageManipulator.manipulateAsync(
-        uri,
-        [
-          {
-            crop: {
-              originX: Math.max(0, originX),
-              originY: Math.max(0, originY),
-              width: Math.min(cropW, w - originX),
-              height: Math.min(cropH, h - originY),
-            },
-          },
-        ],
-        { format: ImageManipulator.SaveFormat.JPEG, compress: 0.9 }
-      );
-
-      const result = await analyzeListImage(cropped.uri);
+      // Zdjęcie z DocumentScanner jest już wykadrowane i spłaszczone
+      const result = await analyzeListImage(uri);
 
       const newScan: Scan = {
         id: `scan_${Date.now()}`,
         squadId: result.squadId,
         scannedAt: new Date().toISOString(),
-        imageUri: cropped.uri,
+        imageUri: uri,
         items: result.items,
       };
 
