@@ -16,6 +16,13 @@ interface AnalysisResult {
  */
 const FILL_THRESHOLD = 120;
 
+/*
+ * Szerokość do jakiej skalujemy obraz przed analizą.
+ * Mniejsza wartość = mniej pamięci w JS heap = brak OOM crash na urządzeniach mobilnych.
+ * 300px × ~420px × 4 bajty = ~504 KB RGBA – bezpieczne dla Hermes.
+ */
+const ANALYSIS_WIDTH = 300;
+
 const LAYOUT = {
   contentStartY: 0.181,
 
@@ -66,7 +73,7 @@ function computeExpectedYCenter(column: 1 | 2 | 3, colRow: number): number {
 }
 
 function sampleBrightness(
-  data: Uint8ClampedArray | Uint8Array,
+  data: Uint8Array,
   cx: number,
   cy: number,
   imgWidth: number,
@@ -94,7 +101,7 @@ function sampleBrightness(
 }
 
 function isFilledAt(
-  data: Uint8ClampedArray | Uint8Array,
+  data: Uint8Array,
   nx: number,
   ny: number,
   imgWidth: number,
@@ -109,20 +116,24 @@ function isFilledAt(
 /*
  * Dynamiczne wyszukiwanie markerów (czarnych kropek ■) w kolumnie.
  */
-function findMarkersInColumn(data: Uint8ClampedArray | Uint8Array, markerX: number, imgWidth: number, imgHeight: number): number[] {
+function findMarkersInColumn(
+  data: Uint8Array,
+  markerX: number,
+  imgWidth: number,
+  imgHeight: number
+): number[] {
   const markers: number[] = [];
   const startY = Math.floor(LAYOUT.contentStartY * imgHeight);
   const endY = Math.floor(imgHeight * 0.95);
   const mx = markerX * imgWidth;
-  
+
   let inMarker = false;
   let markerTop = 0;
-  
+
   for (let y = startY; y < endY; y++) {
-    // Sprawdzamy jasność w bardzo małym promieniu, aby zidentyfikować czarny punkt
     const brightness = sampleBrightness(data, mx, y, imgWidth, 1);
-    const isDark = brightness < 100; // Ostry próg dla markera
-    
+    const isDark = brightness < 100;
+
     if (isDark && !inMarker) {
       inMarker = true;
       markerTop = y;
@@ -130,8 +141,7 @@ function findMarkersInColumn(data: Uint8ClampedArray | Uint8Array, markerX: numb
       inMarker = false;
       const markerBottom = y;
       const markerHeight = (markerBottom - markerTop) / imgHeight;
-      
-      // Marker ma ok. 1.8mm, cała strona 277mm -> ~0.0065. Tolerancja od 0.002 do 0.015
+
       if (markerHeight > 0.002 && markerHeight < 0.015) {
         markers.push((markerTop + markerBottom) / 2 / imgHeight);
       }
@@ -142,10 +152,10 @@ function findMarkersInColumn(data: Uint8ClampedArray | Uint8Array, markerX: numb
 
 function snapToNearestMarker(expectedY: number, markers: number[]): number {
   if (markers.length === 0) return expectedY;
-  
+
   let closest = markers[0];
   let minDiff = Math.abs(expectedY - closest);
-  
+
   for (let i = 1; i < markers.length; i++) {
     const diff = Math.abs(expectedY - markers[i]);
     if (diff < minDiff) {
@@ -153,8 +163,7 @@ function snapToNearestMarker(expectedY: number, markers: number[]): number {
       closest = markers[i];
     }
   }
-  
-  // Jeśli najbliższy marker jest bliżej niż 1x wysokość wiersza, przyciągaj. W przeciwnym razie użyj kalkulowanego Y.
+
   if (minDiff < LAYOUT.itemH) {
     return closest;
   }
@@ -162,23 +171,29 @@ function snapToNearestMarker(expectedY: number, markers: number[]): number {
 }
 
 export async function analyzeListImage(imageUri: string): Promise<AnalysisResult> {
-  // Zmniejszamy rozdzielczość do 600px i zapisujemy jako JPEG, żeby nie wywalić apki brakiem pamięci
+  /*
+   * Kluczowa zmiana: zmniejszamy do ANALYSIS_WIDTH (300px) zamiast 600px.
+   * Dzięki temu bufor RGBA w JS heap jest ~4× mniejszy i nie powoduje OOM crash.
+   * 300 × ~420 × 4 bajty = ~504 KB – bezpieczne dla silnika Hermes na Androidzie.
+   */
   const resized = await ImageManipulator.manipulateAsync(
     imageUri,
-    [{ resize: { width: 600 } }],
-    { format: ImageManipulator.SaveFormat.JPEG, compress: 0.8, base64: true }
+    [{ resize: { width: ANALYSIS_WIDTH } }],
+    { format: ImageManipulator.SaveFormat.JPEG, compress: 0.7, base64: true }
   );
 
   if (!resized.base64) {
     throw new Error('Nie można przetworzyć obrazu');
   }
 
-  // 1. Zdekoduj Base64 do tablicy bajtów (surowy plik JPEG)
   const jpegBytes = base64js.toByteArray(resized.base64);
-  
-  // 2. Rozpakuj JPEG do surowych pikseli RGBA
-  const rawImageData = jpeg.decode(jpegBytes, { useTArray: true });
-  const data = rawImageData.data; // To jest Uint8Array z danymi RGBA
+
+  /*
+   * maxMemoryUsageInMB ogranicza alokacje jpeg-js, zapobiegając crash'owi przy dużych obrazach.
+   * Przy 300px szerokości to czysto bezpieczne, ale dodajemy limit jako dodatkowe zabezpieczenie.
+   */
+  const rawImageData = jpeg.decode(jpegBytes, { useTArray: true, maxMemoryUsageInMB: 32 });
+  const data = rawImageData.data as Uint8Array;
   const width = rawImageData.width;
   const height = rawImageData.height;
 
@@ -188,17 +203,17 @@ export async function analyzeListImage(imageUri: string): Promise<AnalysisResult
 
   const squadId = binaryToNumber(squadDots);
 
-  // Wyszukaj markery dla każdej kolumny
-  const colMarkers = LAYOUT.markerX.map(mx => findMarkersInColumn(data, mx, width, height));
+  const colMarkers = LAYOUT.markerX.map((mx) =>
+    findMarkersInColumn(data, mx, width, height)
+  );
 
   const items: ScannedItem[] = LIST_ITEMS.map((item) => {
     const colIndex = item.column - 1;
     const xPositions = LAYOUT.columns[colIndex].checkboxX;
-    
+
     const expectedY = computeExpectedYCenter(item.column, item.colRow);
     const markersForCol = colMarkers[colIndex];
-    
-    // Używamy dynamicznego snappingu do markera
+
     const trueYCenter = snapToNearestMarker(expectedY, markersForCol);
 
     const filled = xPositions.map((nx) =>
