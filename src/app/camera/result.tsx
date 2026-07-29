@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { Scan } from '../../types';
 import { analyzeListImage } from '../../services/imageAnalysis';
 import { useScans } from '../../hooks/useScans';
@@ -21,6 +20,7 @@ export default function ResultScreen() {
 
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     processImage();
@@ -28,10 +28,12 @@ export default function ResultScreen() {
 
   async function processImage() {
     try {
-      const { uri } = params;
-      if (!uri) throw new Error('Brak zdjęcia');
+      const uri = Array.isArray(params.uri) ? params.uri[0] : params.uri;
 
-      // Zdjęcie z DocumentScanner jest już wykadrowane i spłaszczone
+      if (!uri || uri.trim() === '') {
+        throw new Error('Brak URI zdjęcia w parametrach trasy');
+      }
+
       const result = await analyzeListImage(uri);
 
       const newScan: Scan = {
@@ -44,11 +46,9 @@ export default function ResultScreen() {
 
       setScan(newScan);
     } catch (err) {
-      Alert.alert(
-        'Błąd analizy',
-        'Nie udało się przetworzyć zdjęcia. Spróbuj ponownie.',
-        [{ text: 'OK', onPress: () => router.back() }]
-      );
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[ResultScreen] processImage error:', message);
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,11 @@ export default function ResultScreen() {
   };
 
   const handleDiscard = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/lists');
+    }
   };
 
   const squad = squads.find((sq) => sq.id === scan?.squadId);
@@ -81,7 +85,24 @@ export default function ResultScreen() {
     );
   }
 
-  if (!scan) return null;
+  if (errorMsg || !scan) {
+    return (
+      <View style={styles.loading}>
+        <View style={styles.loadingCard}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.loadingTitle}>Błąd analizy</Text>
+          <Text style={styles.loadingHint}>
+            {errorMsg ?? 'Nie udało się przetworzyć zdjęcia.'}
+          </Text>
+          <View style={styles.errorBtn}>
+            <Text style={styles.errorBtnText} onPress={handleDiscard}>
+              Wróć i spróbuj ponownie
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -131,16 +152,33 @@ const styles = StyleSheet.create({
     padding: 32,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
+    width: '100%',
   },
   loadingTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',
+    textAlign: 'center',
   },
   loadingHint: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  errorIcon: {
+    fontSize: 40,
+  },
+  errorBtn: {
+    marginTop: 8,
+    backgroundColor: '#FF6B35',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  errorBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

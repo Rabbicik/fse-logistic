@@ -30,12 +30,8 @@ function AppShell() {
           options={{ animation: 'fade', presentation: 'fullScreenModal' }}
         />
         <Stack.Screen
-          name="camera/crop"
-          options={{ animation: 'slide_from_bottom' }}
-        />
-        <Stack.Screen
           name="camera/result"
-          options={{ animation: 'slide_from_bottom' }}
+          options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
         />
       </Stack>
       {!hideTabBar && <TabBar />}

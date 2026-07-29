@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,12 @@ import {
   Animated,
   Easing,
   Alert,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
+import { useCameraPermissions } from 'expo-camera';
 import DocumentScanner from 'react-native-document-scanner-plugin';
 
 export default function TabBar() {
@@ -19,9 +21,7 @@ export default function TabBar() {
   const pathname = usePathname();
   const fabScale = useRef(new Animated.Value(1)).current;
   const fabRotate = useRef(new Animated.Value(0)).current;
-
-  // We no longer have an internal camera screen to track
-  const isCameraOpen = false; 
+  const [permission, requestPermission] = useCameraPermissions();
 
   const handleFabPress = useCallback(async () => {
     Animated.sequence([
@@ -38,24 +38,59 @@ export default function TabBar() {
       }),
     ]).start();
 
+    /*
+     * Na Androidzie sprawdzamy uprawnienia do kamery.
+     * react-native-document-scanner-plugin sam zarządza uprawnieniami,
+     * ale wczesne sprawdzenie poprawia UX i redukuje ryzyko crash'u.
+     */
+    if (Platform.OS === 'android' && !permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert(
+          'Brak dostępu do kamery',
+          'Aby skanować listy, przyznaj dostęp do kamery w ustawieniach aplikacji.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+    }
+
     try {
-      const { scannedImages, status } = await DocumentScanner.scanDocument({
-        croppedImageQuality: 100,
+      const scanResult = await DocumentScanner.scanDocument({
+        croppedImageQuality: 90,
         letUserAdjustCrop: true,
       });
 
-      if (status === 'success' && scannedImages && scannedImages.length > 0) {
-        // Send the perfectly cropped image directly to analysis result
+      if (
+        scanResult.status === 'success' &&
+        scanResult.scannedImages &&
+        scanResult.scannedImages.length > 0
+      ) {
+        const uri = scanResult.scannedImages[0];
+
+        if (!uri) {
+          Alert.alert('Błąd', 'Nie otrzymano zdjęcia ze skanera.');
+          return;
+        }
+
         router.push({
           pathname: '/camera/result',
-          params: { uri: scannedImages[0] },
+          params: { uri },
         });
       }
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Błąd kamery', 'Nie udało się uruchomić skanera dokumentów.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('cancel') || message.includes('Cancel')) {
+        return;
+      }
+      console.error('[TabBar] DocumentScanner error:', message);
+      Alert.alert(
+        'Błąd skanera',
+        'Nie udało się uruchomić skanera dokumentów. Sprawdź czy aplikacja ma dostęp do kamery.',
+        [{ text: 'OK' }]
+      );
     }
-  }, [router, fabRotate]);
+  }, [router, fabRotate, permission, requestPermission]);
 
   const handleListsPress = useCallback(() => {
     router.push('/lists');
@@ -119,16 +154,12 @@ export default function TabBar() {
         ]}
       >
         <TouchableOpacity
-          style={[styles.fab, isCameraOpen && styles.fabActive]}
+          style={styles.fab}
           onPress={handleFabPress}
           activeOpacity={0.9}
         >
           <Animated.View style={{ transform: [{ rotate: fabSpin }] }}>
-            <Ionicons
-              name={'camera'}
-              size={28}
-              color="#fff"
-            />
+            <Ionicons name="camera" size={28} color="#fff" />
           </Animated.View>
         </TouchableOpacity>
       </Animated.View>
@@ -194,10 +225,5 @@ const styles = StyleSheet.create({
     elevation: 12,
     borderWidth: 4,
     borderColor: '#161628',
-  },
-  fabActive: {
-    backgroundColor: '#555',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
   },
 });
