@@ -10,8 +10,9 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { exportListTemplatePdf } from '../services/pdfExport';
-import { exportListTxt, aggregateList } from '../services/listExport';
+import { exportListTxt, buildTxt, aggregateList } from '../services/listExport';
 import { defaultListName } from '../services/storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,6 +37,7 @@ export default function ListsScreen() {
 
   const [newListVisible, setNewListVisible] = useState(false);
   const [newListName, setNewListName] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const aggregated = useMemo(
     () => (activeList ? aggregateList(activeList) : []),
@@ -59,7 +61,19 @@ export default function ListsScreen() {
     } catch {
       Alert.alert('Błąd', 'Nie udało się wyeksportować listy do TXT');
     }
-  }, [activeList, squads]);
+  }, [activeList]);
+
+  /* Ta sama treść co plik TXT — do schowka (np. wiadomość na grupę) */
+  const handleCopy = useCallback(async () => {
+    if (!activeList) return;
+    try {
+      await Clipboard.setStringAsync(buildTxt(activeList));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      Alert.alert('Błąd', 'Nie udało się skopiować listy');
+    }
+  }, [activeList]);
 
   const handleDownloadPdf = useCallback(async () => {
     try {
@@ -146,6 +160,21 @@ export default function ListsScreen() {
         >
           <Ionicons name="download-outline" size={16} color="#FF6B35" />
           <Text style={styles.actionText}>Eksport TXT</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionBtn, !activeList && styles.actionBtnDisabled]}
+          onPress={handleCopy}
+          disabled={!activeList}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name={copied ? 'checkmark' : 'copy-outline'}
+            size={16}
+            color={copied ? '#70E000' : '#FF6B35'}
+          />
+          <Text style={[styles.actionText, copied && { color: '#70E000' }]}>
+            {copied ? 'Skopiowano' : 'Kopiuj'}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionBtn} onPress={handleDownloadPdf} activeOpacity={0.8}>
           <Ionicons name="document-outline" size={16} color="#FF6B35" />
