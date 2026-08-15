@@ -1,711 +1,679 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <title>FSE Logistic – Lista Zaopatrzenia</title>
-  <style>
-    @page { size: A4 portrait; margin: 0; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      font-size: 7.8pt;
-      color: #0f172a;
-      background: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-
-    .list-page {
-      position: relative;
-      width: 210mm;
-      height: 297mm;
-      background: #fff;
-      padding: 8mm 10mm;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* SEKCJA IDENTYFIKATORA ZASTĘPU (KOD BINARNY ID 1..15) */
-    .squad-row {
-      display: flex;
-      align-items: center;
-      height: 8.5mm;
-      margin-bottom: 2.5mm;
-      padding: 0 4mm;
-      border: 1.2px solid #94a3b8;
-      border-radius: 1.5mm;
-      background: #f8fafc;
-    }
-    .squad-label { font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-right: 4mm; }
-    .squad-bubbles { display: flex; align-items: center; gap: 2.2mm; }
-    .squad-bubble {
-      width: 5.0mm;
-      height: 5.0mm;
-      border: 0.8px solid #475569;
-      border-radius: 50%;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 6.5pt;
-      font-weight: 800;
-      color: #334155;
-    }
-    .squad-note { font-size: 6.8pt; color: #64748b; margin-left: auto; font-style: italic; font-weight: 600; }
-
-    /* UKŁAD 3 KOLUMN */
-    .columns {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 0 3mm;
-    }
-    .col {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* PASEK TAKTUJĄCY (TIMING TRACK) */
-    .timing-mark {
-      width: 2.2mm;
-      height: 2.0mm;
-      background: #000;
-      border-radius: 0.2mm;
-      margin-right: 1.2mm;
-      flex-shrink: 0;
-    }
-
-    /* KATEGORIA */
-    .cat {
-      height: 7.6mm;
-      font-size: 7.2pt;
-      font-weight: 900;
-      text-transform: uppercase;
-      color: #0f172a;
-      background: #e2e8f0;
-      border-top: 1px solid #94a3b8;
-      border-bottom: 1px solid #94a3b8;
-      padding: 0 1mm;
-      display: flex;
-      align-items: center;
-    }
-    .cat-name { display: flex; align-items: center; flex: 1; overflow: hidden; white-space: nowrap; }
-
-    /* POZYCJA PRODUKTU */
-    .item {
-      height: 7.6mm;
-      border-bottom: 0.4px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 0.2mm;
-    }
-    .item-left { display: flex; align-items: center; flex: 1; min-width: 0; padding-right: 0.5mm; }
-    .item-name {
-      font-size: 7.0pt;
-      font-weight: 600;
-      color: #1e293b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .item-right { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
-    .boxes { display: flex; align-items: center; gap: 0.5mm; }
-
-    /* KÓŁKA OMR (ODPOWIEDZI) - POWIĘKSZONE 4.9mm */
-    .cb {
-      width: 4.9mm;
-      height: 4.9mm;
-      border: 0.6px solid #888;
-      border-radius: 50%;
-      background: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 6.2pt;
-      font-weight: 700;
-      color: #777;
-    }
-    .unit {
-      font-size: 5.8pt;
-      font-weight: 600;
-      color: #475569;
-      margin-left: 0.8mm;
-      width: 7.6mm;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .footer {
-      height: 5mm;
-      margin-top: 2mm;
-      font-size: 6.8pt;
-      color: #64748b;
-      text-align: center;
-      border-top: 1px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 3mm;
-    }
-    .footer strong { color: #0f172a; }
-  </style>
+<meta charset="UTF-8" />
+<title>FSE Logistic – Lista Zaopatrzenia</title>
+<style>
+@page { size: A4 portrait; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 210mm; }
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f172a;
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.list-page { position: relative; width: 210mm; height: 297mm; background: #fff; overflow: hidden; page-break-after: avoid; }
+</style>
 </head>
 <body>
-  <div class="list-page">
-    <!-- SEKCJA IDENTYFIKATORA ZASTĘPU (KOD BINARNY 1..15) -->
-    <div class="squad-row">
-      <span class="squad-label">ID ZASTĘPU:</span>
-      <div class="squad-bubbles">
-        <span class="squad-bubble">1</span>
-        <span class="squad-bubble">2</span>
-        <span class="squad-bubble">3</span>
-        <span class="squad-bubble">4</span>
-      </div>
-      <span class="squad-note">Zamaluj kod swojego zastępu (np. Zastęp 5 = kółko 1 i 3)</span>
-    </div>
-
-    <!-- 3 KOLUMNY PRODUKTÓW -->
-    <div class="columns">
-      <!-- KOLUMNA 1 -->
-      <div class="col">
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Owoce</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jabłka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Banany</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Nektarynka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Arbuz</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 kg</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Warzywa</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ziemniaki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cebula</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Marchew</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pietruszka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pomidory</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ogórki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Czosnek</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 gł.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sałata mix</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sałata (główka)</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pieczarki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 250 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Brokuły</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Pieczywo</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Chleb</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Chleb tostowy</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Bułki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Tortilla</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- KOLUMNA 2 -->
-      <div class="col">
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Mięso</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pierś z kurczaka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mięso mielone</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Schab</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Udka z kurczaka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Skrzydełka z kurczaka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Wątróbka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Boczek</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 200 g</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Wędliny</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Parówki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Szynka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 150 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kiełbasa</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Nabiał</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mleko</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 L</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Masło</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jajka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ser żółty (plasterki)</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 150 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ser żółty (kostka)</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 250 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Twaróg</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 250 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Śmietana 18%</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Śmietanka 30%</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jogurt naturalny</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Serek wiejski</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jogurt smakowe</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- KOLUMNA 3 -->
-      <div class="col">
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Produkty sypkie</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mąka pszenna</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 kg</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cukier</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 kg</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Makaron świderki</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Makaron spaghetti</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ryż</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kasza gryczana</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kasza jęczmienna</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 400 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Płatki owsiane</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Płatki na mleko</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Bułka tarta</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Olej</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 L</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Konserwy</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Passata</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 500 g</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Groszek</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kukurydza</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Tuńczyk</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Fasola</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Sosy</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ketchup</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Majonez</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Musztarda</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
-          </div>
-        </div>
-
-        <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Przyprawy</span>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sól</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pieprz</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka słodka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka ostra</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Czosnek granulowany</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Zioła prowansalskie</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Oregano</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-        <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Przyprawa do kurczaka</span></div>
-          <div class="item-right">
-            <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-      <span>Wypełnij kółka <strong>●</strong> długopisem</span>
-      <span>&bull;</span>
-      <span>1 kółko = 1 jednostka</span>
-      <span>&bull;</span>
-      <span>Skanuj przez <strong>FSE Logistic</strong></span>
-    </div>
-  </div>
+<div class="list-page">
+<div style="position:absolute;left:5mm;top:5mm;width:6mm;height:6mm;background:#000;"></div>
+<div style="position:absolute;left:199mm;top:5mm;width:6mm;height:6mm;background:#000;"></div>
+<div style="position:absolute;left:5mm;top:286mm;width:6mm;height:6mm;background:#000;"></div>
+<div style="position:absolute;left:199mm;top:286mm;width:6mm;height:6mm;background:#000;"></div>
+<div style="position:absolute;left:16mm;top:5.5mm;width:178mm;height:7mm;display:flex;align-items:baseline;justify-content:space-between;border-bottom:0.5mm solid #0f172a;"><span style="font-size:14pt;font-weight:900;letter-spacing:-0.5pt;">FSE Logistic</span><span style="font-size:9pt;font-weight:600;color:#475569;">Lista Zaopatrzenia</span></div>
+<div style="position:absolute;left:14mm;top:14mm;width:182mm;height:9mm;border:1.2px solid #94a3b8;border-radius:1.5mm;background:#f8fafc;"></div>
+<div style="position:absolute;left:18mm;top:14mm;width:26mm;height:9mm;display:flex;align-items:center;font-size:8.5pt;font-weight:800;">ID ZASTĘPU:</div>
+<div style="position:absolute;left:45.5mm;top:16mm;width:5mm;height:5mm;border-radius:50%;border:0.8px solid #475569;background:#fff;display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:#b6bcc6;">1</div>
+<div style="position:absolute;left:54.5mm;top:16mm;width:5mm;height:5mm;border-radius:50%;border:0.8px solid #475569;background:#fff;display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:#b6bcc6;">2</div>
+<div style="position:absolute;left:63.5mm;top:16mm;width:5mm;height:5mm;border-radius:50%;border:0.8px solid #475569;background:#fff;display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:#b6bcc6;">3</div>
+<div style="position:absolute;left:72.5mm;top:16mm;width:5mm;height:5mm;border-radius:50%;border:0.8px solid #475569;background:#fff;display:flex;align-items:center;justify-content:center;font-size:6pt;font-weight:700;color:#b6bcc6;">4</div>
+<div style="position:absolute;left:92mm;top:14mm;width:100mm;height:9mm;display:flex;align-items:center;justify-content:flex-end;font-size:6.8pt;color:#64748b;font-style:italic;font-weight:600;">Zamaluj kod swojego zastępu (np. Zastęp 5 = kółko 1 i 3)</div>
+<div style="position:absolute;left:8mm;top:27.4mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:8.6mm;top:29.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:27mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Owoce</div>
+<div style="position:absolute;left:8mm;top:65.4mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:8.6mm;top:67.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:65mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Warzywa</div>
+<div style="position:absolute;left:8mm;top:164.2mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:8.6mm;top:166.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:163.8mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Pieczywo</div>
+<div style="position:absolute;left:73.667mm;top:27.4mm;width:62.666mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:74.267mm;top:29.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:27mm;width:57.666mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Mięso</div>
+<div style="position:absolute;left:73.667mm;top:88.2mm;width:62.666mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:74.267mm;top:90.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:87.8mm;width:57.666mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Wędliny</div>
+<div style="position:absolute;left:73.667mm;top:118.6mm;width:62.666mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:74.267mm;top:121mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:118.2mm;width:57.666mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Nabiał</div>
+<div style="position:absolute;left:139.333mm;top:27.4mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:139.933mm;top:29.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:27mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Produkty sypkie</div>
+<div style="position:absolute;left:139.333mm;top:118.6mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:139.933mm;top:121mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:118.2mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Konserwy</div>
+<div style="position:absolute;left:139.333mm;top:164.2mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:139.933mm;top:166.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:163.8mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Sosy</div>
+<div style="position:absolute;left:139.333mm;top:194.6mm;width:62.667mm;height:6.8mm;background:#e2e8f0;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;"></div>
+<div style="position:absolute;left:139.933mm;top:197mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:194.2mm;width:57.667mm;height:7.6mm;display:flex;align-items:center;font-size:7.2pt;font-weight:900;text-transform:uppercase;color:#0f172a;white-space:nowrap;overflow:hidden;">Przyprawy</div>
+<div style="position:absolute;left:8mm;top:42mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:37.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:34.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Jabłka</div>
+<div style="position:absolute;left:33.867mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:34.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:49.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:45mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:42.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Banany</div>
+<div style="position:absolute;left:33.867mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:42.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:57.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:52.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:49.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Nektarynka</div>
+<div style="position:absolute;left:33.867mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:49.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:64.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:60.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:57.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Arbuz</div>
+<div style="position:absolute;left:33.867mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:57.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 kg</div>
+<div style="position:absolute;left:8mm;top:80mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:75.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:72.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ziemniaki</div>
+<div style="position:absolute;left:33.867mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:72.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:8mm;top:87.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:83mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:80.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Cebula</div>
+<div style="position:absolute;left:33.867mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:80.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:95.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:90.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:87.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Marchew</div>
+<div style="position:absolute;left:33.867mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:87.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:102.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:98.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:95.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Pietruszka</div>
+<div style="position:absolute;left:33.867mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:95.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:110.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:105.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:103mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Pomidory</div>
+<div style="position:absolute;left:33.867mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:103mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:118mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:113.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:110.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ogórki</div>
+<div style="position:absolute;left:33.867mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:110.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:8mm;top:125.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:121mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:118.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Papryka</div>
+<div style="position:absolute;left:33.867mm;top:119.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:119.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:119.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:119.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:119.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:118.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:133.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:128.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:125.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Czosnek</div>
+<div style="position:absolute;left:33.867mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:125.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 gł.</div>
+<div style="position:absolute;left:8mm;top:140.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:136.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:133.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Sałata mix</div>
+<div style="position:absolute;left:33.867mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:133.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:8mm;top:148.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:143.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:141mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Sałata (główka)</div>
+<div style="position:absolute;left:33.867mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:141mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:156mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:151.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:148.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Pieczarki</div>
+<div style="position:absolute;left:33.867mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:148.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 250 g</div>
+<div style="position:absolute;left:8mm;top:163.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:159mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:156.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Brokuły</div>
+<div style="position:absolute;left:33.867mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:156.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:178.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:174.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:171.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Chleb</div>
+<div style="position:absolute;left:33.867mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:171.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:8mm;top:186.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:181.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:179mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Chleb tostowy</div>
+<div style="position:absolute;left:33.867mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:179mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:8mm;top:194mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:189.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:186.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Bułki</div>
+<div style="position:absolute;left:33.867mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:186.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 4 szt.</div>
+<div style="position:absolute;left:8mm;top:201.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:8.6mm;top:197mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:12.5mm;top:194.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Tortilla</div>
+<div style="position:absolute;left:33.867mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:39.467mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:45.067mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:50.667mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:56.267mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:61.467mm;top:194.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:73.667mm;top:42mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:37.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:34.6mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Pierś z kurczaka</div>
+<div style="position:absolute;left:99.533mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:34.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:73.667mm;top:49.6mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:45mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:42.2mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Mięso mielone</div>
+<div style="position:absolute;left:99.533mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:42.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:73.667mm;top:57.2mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:52.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:49.8mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Schab</div>
+<div style="position:absolute;left:99.533mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:49.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:73.667mm;top:64.8mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:60.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:57.4mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Udka z kurczaka</div>
+<div style="position:absolute;left:99.533mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:57.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:73.667mm;top:72.4mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:67.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:65mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Skrzydełka z kurczaka</div>
+<div style="position:absolute;left:99.533mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:65mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:73.667mm;top:80mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:75.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:72.6mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Wątróbka</div>
+<div style="position:absolute;left:99.533mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:72.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:73.667mm;top:87.6mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:83mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:80.2mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Boczek</div>
+<div style="position:absolute;left:99.533mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:80.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 200 g</div>
+<div style="position:absolute;left:73.667mm;top:102.8mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:98.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:95.4mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Parówki</div>
+<div style="position:absolute;left:99.533mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:95.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 4 szt.</div>
+<div style="position:absolute;left:73.667mm;top:110.4mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:105.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:103mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Szynka</div>
+<div style="position:absolute;left:99.533mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:103mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 150 g</div>
+<div style="position:absolute;left:73.667mm;top:118mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:113.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:110.6mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Kiełbasa</div>
+<div style="position:absolute;left:99.533mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:110.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:73.667mm;top:133.2mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:128.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:125.8mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Mleko</div>
+<div style="position:absolute;left:99.533mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:125.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 L</div>
+<div style="position:absolute;left:73.667mm;top:140.8mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:136.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:133.4mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Masło</div>
+<div style="position:absolute;left:99.533mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:133.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:73.667mm;top:148.4mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:143.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:141mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Jajka</div>
+<div style="position:absolute;left:99.533mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:141mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 4 szt.</div>
+<div style="position:absolute;left:73.667mm;top:156mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:151.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:148.6mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ser żółty (plasterki)</div>
+<div style="position:absolute;left:99.533mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:148.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 150 g</div>
+<div style="position:absolute;left:73.667mm;top:163.6mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:159mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:156.2mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ser żółty (kostka)</div>
+<div style="position:absolute;left:99.533mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:156.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 250 g</div>
+<div style="position:absolute;left:73.667mm;top:171.2mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:166.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:163.8mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Twaróg</div>
+<div style="position:absolute;left:99.533mm;top:165.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:165.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:165.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:165.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:165.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:163.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 250 g</div>
+<div style="position:absolute;left:73.667mm;top:178.8mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:174.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:171.4mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Śmietana 18%</div>
+<div style="position:absolute;left:99.533mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:171.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:73.667mm;top:186.4mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:181.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:179mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Śmietanka 30%</div>
+<div style="position:absolute;left:99.533mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:179mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:73.667mm;top:194mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:189.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:186.6mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Jogurt naturalny</div>
+<div style="position:absolute;left:99.533mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:186.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:73.667mm;top:201.6mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:197mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:194.2mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Serek wiejski</div>
+<div style="position:absolute;left:99.533mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:195.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:194.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:73.667mm;top:209.2mm;width:24.866mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:74.267mm;top:204.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:78.167mm;top:201.8mm;width:20.366mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Jogurt smakowe</div>
+<div style="position:absolute;left:99.533mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:105.133mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:110.733mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:116.333mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:121.933mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:127.133mm;top:201.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 2 szt.</div>
+<div style="position:absolute;left:139.333mm;top:42mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:37.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:34.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Mąka pszenna</div>
+<div style="position:absolute;left:165.2mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:35.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:34.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 kg</div>
+<div style="position:absolute;left:139.333mm;top:49.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:45mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:42.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Cukier</div>
+<div style="position:absolute;left:165.2mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:43.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:42.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 kg</div>
+<div style="position:absolute;left:139.333mm;top:57.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:52.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:49.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Makaron świderki</div>
+<div style="position:absolute;left:165.2mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:51.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:49.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:64.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:60.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:57.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Makaron spaghetti</div>
+<div style="position:absolute;left:165.2mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:58.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:57.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:72.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:67.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:65mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ryż</div>
+<div style="position:absolute;left:165.2mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:66.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:65mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:139.333mm;top:80mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:75.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:72.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Kasza gryczana</div>
+<div style="position:absolute;left:165.2mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:73.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:72.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:139.333mm;top:87.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:83mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:80.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Kasza jęczmienna</div>
+<div style="position:absolute;left:165.2mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:81.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:80.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 400 g</div>
+<div style="position:absolute;left:139.333mm;top:95.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:90.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:87.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Płatki owsiane</div>
+<div style="position:absolute;left:165.2mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:89.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:87.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:102.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:98.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:95.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Płatki na mleko</div>
+<div style="position:absolute;left:165.2mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:96.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:95.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:110.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:105.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:103mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Bułka tarta</div>
+<div style="position:absolute;left:165.2mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:104.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:103mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:118mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:113.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:110.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Olej</div>
+<div style="position:absolute;left:165.2mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:111.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:110.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 L</div>
+<div style="position:absolute;left:139.333mm;top:133.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:128.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:125.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Passata</div>
+<div style="position:absolute;left:165.2mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:127.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:125.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 500 g</div>
+<div style="position:absolute;left:139.333mm;top:140.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:136.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:133.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Groszek</div>
+<div style="position:absolute;left:165.2mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:134.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:133.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:148.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:143.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:141mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Kukurydza</div>
+<div style="position:absolute;left:165.2mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:142.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:141mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:156mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:151.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:148.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Tuńczyk</div>
+<div style="position:absolute;left:165.2mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:149.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:148.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:163.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:159mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:156.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Fasola</div>
+<div style="position:absolute;left:165.2mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:157.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:156.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:178.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:174.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:171.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Ketchup</div>
+<div style="position:absolute;left:165.2mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:172.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:171.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:139.333mm;top:186.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:181.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:179mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Majonez</div>
+<div style="position:absolute;left:165.2mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:180.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:179mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:139.333mm;top:194mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:189.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:186.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Musztarda</div>
+<div style="position:absolute;left:165.2mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:187.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:186.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 szt.</div>
+<div style="position:absolute;left:139.333mm;top:209.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:204.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:201.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Sól</div>
+<div style="position:absolute;left:165.2mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:203.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:201.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:216.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:212.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:209.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Pieprz</div>
+<div style="position:absolute;left:165.2mm;top:210.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:210.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:210.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:210.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:210.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:209.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:224.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:219.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:217mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Papryka słodka</div>
+<div style="position:absolute;left:165.2mm;top:218.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:218.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:218.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:218.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:218.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:217mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:232mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:227.4mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:224.6mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Papryka ostra</div>
+<div style="position:absolute;left:165.2mm;top:225.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:225.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:225.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:225.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:225.95mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:224.6mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:239.6mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:235mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:232.2mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Czosnek granulowany</div>
+<div style="position:absolute;left:165.2mm;top:233.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:233.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:233.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:233.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:233.55mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:232.2mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:247.2mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:242.6mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:239.8mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Zioła prowansalskie</div>
+<div style="position:absolute;left:165.2mm;top:241.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:241.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:241.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:241.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:241.15mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:239.8mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:254.8mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:250.2mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:247.4mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Oregano</div>
+<div style="position:absolute;left:165.2mm;top:248.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:248.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:248.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:248.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:248.75mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:247.4mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:139.333mm;top:262.4mm;width:24.867mm;height:0.2mm;background:#e2e8f0;"></div>
+<div style="position:absolute;left:139.933mm;top:257.8mm;width:2.2mm;height:2mm;background:#000;border-radius:0.2mm;"></div>
+<div style="position:absolute;left:143.833mm;top:255mm;width:20.367mm;height:7.6mm;display:flex;align-items:center;font-size:7pt;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;">Przyprawa do kurczaka</div>
+<div style="position:absolute;left:165.2mm;top:256.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">1</div>
+<div style="position:absolute;left:170.8mm;top:256.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">2</div>
+<div style="position:absolute;left:176.4mm;top:256.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">3</div>
+<div style="position:absolute;left:182mm;top:256.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">4</div>
+<div style="position:absolute;left:187.6mm;top:256.35mm;width:4.9mm;height:4.9mm;border-radius:50%;border:0.6px solid #888;background:#fff;display:flex;align-items:center;justify-content:center;font-size:5.5pt;font-weight:700;color:#c2c7cf;">5</div>
+<div style="position:absolute;left:192.8mm;top:255mm;width:9.2mm;height:7.6mm;display:flex;align-items:center;font-size:5.6pt;font-weight:600;color:#475569;white-space:nowrap;overflow:hidden;">/ 1 op.</div>
+<div style="position:absolute;left:16mm;top:268mm;width:178mm;height:5mm;display:flex;align-items:center;justify-content:center;border-top:1px solid #cbd5e1;font-size:6.8pt;color:#64748b;">Wypełnij kółka długopisem • 1 kółko = 1 jednostka • Skanuj przez FSE Logistic</div>
+</div>
 </body>
 </html>

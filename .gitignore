@@ -44,3 +44,9 @@ example
 
 install_android_cli.cmd
 
+
+# OMR test build output
+.omr-test-build/
+
+# workaround: kosz na pliki usuwane przez Cowork
+_to_delete/
