@@ -13,8 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useScans } from '../hooks/useScans';
 import { Squad } from '../types';
-import { LIST_ITEMS } from '../constants/listTemplate';
-import { SQUAD_COLORS } from '../constants/listTemplate';
+import { LIST_ITEMS, SQUAD_COLORS, numberToBinaryDots } from '../constants/listTemplate';
+import DotId from '../components/ui/DotId';
 
 interface SquadSummary {
   squad: Squad;
@@ -29,8 +29,8 @@ export default function SquadsScreen() {
   const [editName, setEditName] = useState('');
 
   const summaries = useMemo<SquadSummary[]>(() => {
-    return squads.map((sq) => {
-      const squadScans = scans.filter((s) => s.squadId === sq.id);
+    return (squads || []).map((sq) => {
+      const squadScans = (scans || []).filter((s) => s.squadId === sq.id);
       const totalItems = squadScans.reduce(
         (sum, s) => sum + s.items.reduce((ss, i) => ss + i.quantity, 0),
         0
@@ -85,7 +85,10 @@ export default function SquadsScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Zastępy</Text>
         <TouchableOpacity style={styles.addBtn} onPress={addSquad} activeOpacity={0.8}>
-          <Ionicons name="add" size={20} color="#FF6B35" />
+          <Ionicons name="add" size={18} color="#FF6B35" />
+          <Text style={{ color: '#FF6B35', fontWeight: '700', fontSize: 13, marginLeft: 4 }}>
+            Dodaj
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -99,6 +102,9 @@ export default function SquadsScreen() {
             <View style={styles.cardHeader}>
               <View style={[styles.colorDot, { backgroundColor: item.squad.color }]} />
               <Text style={styles.squadName}>{item.squad.name}</Text>
+              <View style={{ marginLeft: 'auto', marginRight: 10 }}>
+                <DotId filled={numberToBinaryDots(item.squad.id)} size={11} filledColor={item.squad.color} />
+              </View>
               <TouchableOpacity
                 onPress={() => openEdit(item.squad)}
                 style={styles.editBtn}
@@ -208,9 +214,10 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 107, 53, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,245 +1,370 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as jpeg from 'jpeg-js';
 import * as base64js from 'base64-js';
-import { ScannedItem } from '../types';
-import { LIST_ITEMS, ID_DOT_COUNT } from '../constants/listTemplate';
+import { ScannedItem, DebugData, Point, RowDebug, CheckboxDebug } from '../types';
+import {
+  OMR_GEOMETRY,
+  CATEGORY_BLOCKS,
+  CategoryBlock,
+  computeQuantity,
+  binaryDotsToNumber,
+  numberToBinaryDots,
+} from '../constants/listTemplate';
 
-interface AnalysisResult {
+export interface AnalysisResult {
   squadId: number;
   squadDots: boolean[];
   items: ScannedItem[];
+  debugData?: DebugData;
 }
 
-/*
- * Próg jasności poniżej którego piksel uznawany jest za zamalowany.
- * 0 = czarny, 255 = biały
- */
-const FILL_THRESHOLD = 120;
+const ANALYSIS_W = 1600;
 
-/*
- * Szerokość do jakiej skalujemy obraz przed analizą.
- * Mniejsza wartość = mniej pamięci w JS heap = brak OOM crash na urządzeniach mobilnych.
- * 300px × ~420px × 4 bajty = ~504 KB RGBA – bezpieczne dla Hermes.
- */
-const ANALYSIS_WIDTH = 300;
+// ---------------------------------------------------------------------------
+// POMOCNICZE FUNKCJE PIKSELI
+// ---------------------------------------------------------------------------
+function getLum(data: Uint8Array, px: number, py: number, imgW: number, imgH: number): number {
+  const x = Math.max(0, Math.min(imgW - 1, Math.round(px)));
+  const y = Math.max(0, Math.min(imgH - 1, Math.round(py)));
+  const idx = (y * imgW + x) * 4;
+  if (idx < 0 || idx + 2 >= data.length) return 255;
+  return 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+}
 
-const LAYOUT = {
-  contentStartY: 0.181,
-
-  idCheckboxX: [0.174, 0.213, 0.253, 0.292, 0.332, 0.371, 0.411, 0.45, 0.489, 0.529],
-  idCheckboxY: 0.134,
-
-  markerX: [0.049, 0.364, 0.678],
-
-  columns: [
-    { checkboxX: [0.192, 0.213, 0.234, 0.255, 0.276] },
-    { checkboxX: [0.506, 0.527, 0.548, 0.569, 0.59] },
-    { checkboxX: [0.82, 0.841, 0.862, 0.883, 0.904] },
-  ] as const,
-
-  itemH: 0.022,
-  catH: 0.020,
-  catMarginH: 0.009,
-};
-
-/*
- * Oblicza przewidywany środek Y (znormalizowany) dla danego produktu w kolumnie.
- */
-function computeExpectedYCenter(column: 1 | 2 | 3, colRow: number): number {
-  const colItems = LIST_ITEMS.filter((i) => i.column === column);
-
-  let cumY = LAYOUT.contentStartY;
-  let prevCategory = '';
-  let rowsProcessed = 0;
-
-  for (const item of colItems) {
-    if (item.category !== prevCategory) {
-      if (prevCategory !== '') {
-        cumY += LAYOUT.catMarginH;
+function avgRadius(data: Uint8Array, cx: number, cy: number, imgW: number, imgH: number, r: number): number {
+  let sum = 0;
+  let count = 0;
+  const rInt = Math.max(1, Math.round(r));
+  for (let dy = -rInt; dy <= rInt; dy++) {
+    for (let dx = -rInt; dx <= rInt; dx++) {
+      if (dx * dx + dy * dy <= rInt * rInt) {
+        sum += getLum(data, cx + dx, cy + dy, imgW, imgH);
+        count++;
       }
-      cumY += LAYOUT.catH;
-      prevCategory = item.category;
     }
+  }
+  return count > 0 ? sum / count : 255;
+}
 
-    if (rowsProcessed === colRow) {
-      return cumY + LAYOUT.itemH / 2;
-    }
+// ---------------------------------------------------------------------------
+// RZUTOWANIE WSPÓŁRZĘDNYCH MM DO PIKSELI PRZYCIĘTEGO DOKUMENTU A4
+// ---------------------------------------------------------------------------
+function mmToPixel(
+  xMm: number,
+  yMm: number,
+  imgW: number,
+  imgH: number
+): Point {
+  const normX = xMm / OMR_GEOMETRY.PAGE_W_MM;
+  const normY = yMm / OMR_GEOMETRY.PAGE_H_MM;
+  return {
+    x: normX * imgW,
+    y: normY * imgH,
+  };
+}
 
-    cumY += LAYOUT.itemH;
-    rowsProcessed++;
+function analyzeSquadSubRegion(
+  data: Uint8Array,
+  W: number,
+  H: number,
+  pxPerMm: number
+): { squadId: number; squadDots: boolean[]; debugCheckboxes: CheckboxDebug[] } {
+  const squadYMm = OMR_GEOMETRY.SQUAD.ROW_Y_MM;
+  const squadRadiusPx = OMR_GEOMETRY.SQUAD.BUBBLE_RADIUS_MM * pxPerMm;
+  const squadDots: boolean[] = [];
+  const debugCheckboxes: CheckboxDebug[] = [];
+
+  // Próbkowanie lokalnego tła papieru w sekcji Zastępu
+  const pRefLeft = mmToPixel(OMR_GEOMETRY.SQUAD.BUBBLES_X_MM[0] - 8, squadYMm, W, H);
+  const pRefRight = mmToPixel(OMR_GEOMETRY.SQUAD.BUBBLES_X_MM[OMR_GEOMETRY.SQUAD.COUNT - 1] + 12, squadYMm, W, H);
+  const localPaperBg = (
+    avgRadius(data, pRefLeft.x, pRefLeft.y, W, H, 4) +
+    avgRadius(data, pRefRight.x, pRefRight.y, W, H, 4)
+  ) / 2;
+
+  for (let i = 0; i < OMR_GEOMETRY.SQUAD.COUNT; i++) {
+    const bubbleXMm = OMR_GEOMETRY.SQUAD.BUBBLES_X_MM[i];
+    const pt = mmToPixel(bubbleXMm, squadYMm, W, H);
+    const evalRes = evaluateBubbleWithBg(data, W, H, pt.x, pt.y, squadRadiusPx, localPaperBg);
+
+    squadDots.push(evalRes.isMarked);
+
+    debugCheckboxes.push({
+      point: pt,
+      isMarked: evalRes.isMarked,
+      lum: evalRes.meanLum,
+      bg: localPaperBg,
+      bounds: { yMin: pt.y - squadRadiusPx, yMax: pt.y + squadRadiusPx },
+    });
   }
 
-  return cumY;
+  const detectedId = binaryDotsToNumber(squadDots);
+  const squadId = detectedId > 0 && detectedId <= 15 ? detectedId : (detectedId > 0 ? detectedId : 1);
+
+  return {
+    squadId,
+    squadDots,
+    debugCheckboxes,
+  };
 }
 
-function sampleBrightness(
+// ---------------------------------------------------------------------------
+// ETAP 2: DETEKCJA POCZĄTKU KATEGORII (CATEGORY HEADER LOCK)
+// ---------------------------------------------------------------------------
+function findCategoryHeaderY(
   data: Uint8Array,
+  W: number,
+  H: number,
+  block: CategoryBlock,
+  pxPerMm: number
+): number {
+  const colConfig = OMR_GEOMETRY.COLUMNS.COLS[block.colIndex];
+  const nominalYMm = OMR_GEOMETRY.COLUMNS.ROW_START_Y_MM + block.startRowIdx * OMR_GEOMETRY.COLUMNS.ROW_H_MM;
+  const nominalPt = mmToPixel(colConfig.timingX, nominalYMm, W, H);
+
+  const searchRangePx = Math.round(OMR_GEOMETRY.COLUMNS.ROW_H_MM * 0.45 * pxPerMm);
+  const startY = Math.max(0, Math.round(nominalPt.y - searchRangePx));
+  const endY   = Math.min(H - 1, Math.round(nominalPt.y + searchRangePx));
+
+  const trackHalfW = Math.max(1, Math.round(1.0 * pxPerMm));
+
+  let minLum = 255;
+  let bestY = nominalPt.y;
+
+  for (let y = startY; y <= endY; y++) {
+    let sum = 0;
+    let n = 0;
+    for (let dx = -trackHalfW; dx <= trackHalfW; dx++) {
+      sum += getLum(data, nominalPt.x + dx, y, W, H);
+      n++;
+    }
+    const avg = n > 0 ? sum / n : 255;
+    if (avg < minLum) {
+      minLum = avg;
+      bestY = y;
+    }
+  }
+
+  return minLum < 140 ? bestY : nominalPt.y;
+}
+
+// ---------------------------------------------------------------------------
+// ETAP 3: SYNCHRONIZACJA WIERSZA Z PASKIEM TAKTUJĄCYM
+// ---------------------------------------------------------------------------
+function syncRowY(
+  data: Uint8Array,
+  W: number,
+  H: number,
+  expectedTimingPt: Point,
+  pxPerMm: number
+): { syncedY: number; timingCenter: Point } {
+  const searchRangePx = Math.round(OMR_GEOMETRY.COLUMNS.ROW_H_MM * 0.45 * pxPerMm);
+  const trackHalfW = Math.max(1, Math.round(1.0 * pxPerMm));
+
+  let minLum = 255;
+  let bestY = expectedTimingPt.y;
+
+  const startY = Math.max(0, Math.round(expectedTimingPt.y - searchRangePx));
+  const endY   = Math.min(H - 1, Math.round(expectedTimingPt.y + searchRangePx));
+
+  for (let y = startY; y <= endY; y++) {
+    let sum = 0;
+    let n = 0;
+    for (let dx = -trackHalfW; dx <= trackHalfW; dx++) {
+      sum += getLum(data, expectedTimingPt.x + dx, y, W, H);
+      n++;
+    }
+    const avg = n > 0 ? sum / n : 255;
+    if (avg < minLum) {
+      minLum = avg;
+      bestY = y;
+    }
+  }
+
+  const syncedY = minLum < 140 ? bestY : expectedTimingPt.y;
+  return { syncedY, timingCenter: { x: expectedTimingPt.x, y: syncedY } };
+}
+
+// ---------------------------------------------------------------------------
+// ETAP 4: EWALUACJA GĘSTOŚCI WYPEŁNIENIA KÓŁKA (FILL-RATIO %)
+// ---------------------------------------------------------------------------
+interface BubbleEvaluation {
+  isMarked: boolean;
+  fillRatio: number;
+  meanLum: number;
+}
+
+function evaluateBubbleWithBg(
+  data: Uint8Array,
+  W: number,
+  H: number,
   cx: number,
   cy: number,
-  imgWidth: number,
-  radius: number
-): number {
-  let total = 0;
-  let count = 0;
+  radiusPx: number,
+  bgLum: number
+): BubbleEvaluation {
+  // Promień wewnętrzny 70% promienia kółka (omija szarą ramkę)
+  const innerR = Math.max(2, Math.round(radiusPx * 0.70));
+  const darkDeltaThreshold = 28;
 
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius; dx <= radius; dx++) {
-      const px = Math.round(cx + dx);
-      const py = Math.round(cy + dy);
-      if (px < 0 || py < 0 || px >= imgWidth) continue;
+  let darkPixels = 0;
+  let totalPixels = 0;
+  let sumLum = 0;
 
-      const idx = (py * imgWidth + px) * 4;
-      if (idx + 2 >= data.length) continue;
-
-      const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
-      total += lum;
-      count++;
-    }
-  }
-
-  return count > 0 ? total / count : 255;
-}
-
-function isFilledAt(
-  data: Uint8Array,
-  nx: number,
-  ny: number,
-  imgWidth: number,
-  imgHeight: number
-): boolean {
-  const cx = nx * imgWidth;
-  const cy = ny * imgHeight;
-  const brightness = sampleBrightness(data, cx, cy, imgWidth, 2);
-  return brightness < FILL_THRESHOLD;
-}
-
-/*
- * Dynamiczne wyszukiwanie markerów (czarnych kropek ■) w kolumnie.
- */
-function findMarkersInColumn(
-  data: Uint8Array,
-  markerX: number,
-  imgWidth: number,
-  imgHeight: number
-): number[] {
-  const markers: number[] = [];
-  const startY = Math.floor(LAYOUT.contentStartY * imgHeight);
-  const endY = Math.floor(imgHeight * 0.95);
-  const mx = markerX * imgWidth;
-
-  let inMarker = false;
-  let markerTop = 0;
-
-  for (let y = startY; y < endY; y++) {
-    const brightness = sampleBrightness(data, mx, y, imgWidth, 1);
-    const isDark = brightness < 100;
-
-    if (isDark && !inMarker) {
-      inMarker = true;
-      markerTop = y;
-    } else if (!isDark && inMarker) {
-      inMarker = false;
-      const markerBottom = y;
-      const markerHeight = (markerBottom - markerTop) / imgHeight;
-
-      if (markerHeight > 0.002 && markerHeight < 0.015) {
-        markers.push((markerTop + markerBottom) / 2 / imgHeight);
+  for (let dy = -innerR; dy <= innerR; dy++) {
+    for (let dx = -innerR; dx <= innerR; dx++) {
+      if (dx * dx + dy * dy <= innerR * innerR) {
+        const lum = getLum(data, cx + dx, cy + dy, W, H);
+        sumLum += lum;
+        totalPixels++;
+        if (bgLum - lum > darkDeltaThreshold) {
+          darkPixels++;
+        }
       }
     }
   }
-  return markers;
+
+  const fillRatio = totalPixels > 0 ? darkPixels / totalPixels : 0;
+  const meanLum = totalPixels > 0 ? sumLum / totalPixels : 255;
+
+  const isMarked = fillRatio >= 0.38 || (bgLum - meanLum > 36 && fillRatio >= 0.25);
+
+  return {
+    isMarked,
+    fillRatio,
+    meanLum,
+  };
 }
 
-function snapToNearestMarker(expectedY: number, markers: number[]): number {
-  if (markers.length === 0) return expectedY;
+// ---------------------------------------------------------------------------
+// ETAP 5: ANALIZA WYIZOLOWANEGO BLOKU KATEGORII (ZOOM & ANALYZE)
+// ---------------------------------------------------------------------------
+function analyzeCategoryBlock(
+  data: Uint8Array,
+  W: number,
+  H: number,
+  block: CategoryBlock,
+  pxPerMm: number
+): { items: ScannedItem[]; rowDebugs: RowDebug[] } {
+  const colConfig = OMR_GEOMETRY.COLUMNS.COLS[block.colIndex];
+  const cbRadiusPx = OMR_GEOMETRY.COLUMNS.CB_RADIUS_MM * pxPerMm;
 
-  let closest = markers[0];
-  let minDiff = Math.abs(expectedY - closest);
+  // 1. Dokładny początek nagłówka kategorii
+  const headerYPx = findCategoryHeaderY(data, W, H, block, pxPerMm);
 
-  for (let i = 1; i < markers.length; i++) {
-    const diff = Math.abs(expectedY - markers[i]);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closest = markers[i];
-    }
-  }
+  // 2. Próbkowanie lokalnego tła papieru w tym bloku
+  const pBgLeft = mmToPixel(colConfig.leftMm + 4, 0, W, H);
+  const localCategoryBg = avgRadius(data, pBgLeft.x, headerYPx + Math.round(8 * pxPerMm), W, H, 5);
 
-  if (minDiff < LAYOUT.itemH) {
-    return closest;
-  }
-  return expectedY;
-}
+  const scannedItems: ScannedItem[] = [];
+  const rowDebugs: RowDebug[] = [];
 
-export async function analyzeListImage(imageUri: string): Promise<AnalysisResult> {
-  /*
-   * Kluczowa zmiana: zmniejszamy do ANALYSIS_WIDTH (300px) zamiast 600px.
-   * Dzięki temu bufor RGBA w JS heap jest ~4× mniejszy i nie powoduje OOM crash.
-   * 300 × ~420 × 4 bajty = ~504 KB – bezpieczne dla silnika Hermes na Androidzie.
-   */
-  const resized = await ImageManipulator.manipulateAsync(
-    imageUri,
-    [{ resize: { width: ANALYSIS_WIDTH } }],
-    { format: ImageManipulator.SaveFormat.JPEG, compress: 0.7, base64: true }
-  );
+  // 3. Skanowanie każdego wiersza produktu
+  block.items.forEach((item, itemIdx) => {
+    const rowOffsetMm = (itemIdx + 1) * OMR_GEOMETRY.COLUMNS.ROW_H_MM;
+    const expectedYPx = headerYPx + rowOffsetMm * pxPerMm;
 
-  if (!resized.base64) {
-    throw new Error('Nie można przetworzyć obrazu');
-  }
-
-  const jpegBytes = base64js.toByteArray(resized.base64);
-
-  /*
-   * maxMemoryUsageInMB ogranicza alokacje jpeg-js, zapobiegając crash'owi przy dużych obrazach.
-   * Przy 300px szerokości to czysto bezpieczne, ale dodajemy limit jako dodatkowe zabezpieczenie.
-   */
-  const rawImageData = jpeg.decode(jpegBytes, { useTArray: true, maxMemoryUsageInMB: 32 });
-  const data = rawImageData.data as Uint8Array;
-  const width = rawImageData.width;
-  const height = rawImageData.height;
-
-  const squadDots: boolean[] = LAYOUT.idCheckboxX.map((nx) =>
-    isFilledAt(data, nx, LAYOUT.idCheckboxY, width, height)
-  );
-
-  const squadId = binaryToNumber(squadDots);
-
-  const colMarkers = LAYOUT.markerX.map((mx) =>
-    findMarkersInColumn(data, mx, width, height)
-  );
-
-  const items: ScannedItem[] = LIST_ITEMS.map((item) => {
-    const colIndex = item.column - 1;
-    const xPositions = LAYOUT.columns[colIndex].checkboxX;
-
-    const expectedY = computeExpectedYCenter(item.column, item.colRow);
-    const markersForCol = colMarkers[colIndex];
-
-    const trueYCenter = snapToNearestMarker(expectedY, markersForCol);
-
-    const filled = xPositions.map((nx) =>
-      isFilledAt(data, nx, trueYCenter, width, height)
-    );
-
-    return {
-      itemId: item.id,
-      quantity: filled.filter(Boolean).length,
-      filled,
+    const expectedTimingPt: Point = {
+      x: mmToPixel(colConfig.timingX, 0, W, H).x,
+      y: expectedYPx,
     };
+
+    const { syncedY, timingCenter } = syncRowY(data, W, H, expectedTimingPt, pxPerMm);
+
+    let markedCount = 0;
+    const filled: boolean[] = [false, false, false, false, false];
+    const debugCheckboxes: CheckboxDebug[] = [];
+
+    for (let b = 0; b < (item.maxDots || 5); b++) {
+      const cbFromRightMm = OMR_GEOMETRY.COLUMNS.CB_FROM_RIGHT_MM[b];
+      const cbXMm = colConfig.rightMm - cbFromRightMm;
+      const finalX = mmToPixel(cbXMm, 0, W, H).x;
+      const finalY = syncedY;
+
+      const evalRes = evaluateBubbleWithBg(data, W, H, finalX, finalY, cbRadiusPx, localCategoryBg);
+
+      debugCheckboxes.push({
+        point: { x: finalX, y: finalY },
+        isMarked: evalRes.isMarked,
+        lum: evalRes.meanLum,
+        bg: localCategoryBg,
+        bounds: { yMin: finalY - cbRadiusPx, yMax: finalY + cbRadiusPx },
+      });
+
+      if (evalRes.isMarked) {
+        filled[b] = true;
+        markedCount = b + 1;
+      }
+    }
+
+    const totalQuantity = computeQuantity(markedCount, item);
+    scannedItems.push({
+      itemId: item.id,
+      quantity: markedCount,
+      totalQuantity,
+      filled,
+    });
+
+    rowDebugs.push({
+      itemId: item.id,
+      expectedY: expectedYPx,
+      localAnchor: timingCenter,
+      rowLineY: syncedY,
+      checkboxes: debugCheckboxes,
+    });
   });
 
-  return { squadId, squadDots, items };
+  return { items: scannedItems, rowDebugs };
 }
 
-function binaryToNumber(dots: boolean[]): number {
-  return dots.reduce(
-    (acc, filled, i) => acc + (filled ? Math.pow(2, dots.length - 1 - i) : 0),
-    0
+// ---------------------------------------------------------------------------
+// GŁÓWNA FUNKCJA ANALIZY OMR
+// ---------------------------------------------------------------------------
+export async function analyzeListImage(imageUri: string): Promise<AnalysisResult> {
+  const resized = await ImageManipulator.manipulateAsync(
+    imageUri,
+    [{ resize: { width: ANALYSIS_W } }],
+    { format: ImageManipulator.SaveFormat.JPEG, compress: 0.90, base64: true }
   );
+  if (!resized.base64) throw new Error('Nie można przetworzyć obrazu z aparatu');
+
+  const raw = jpeg.decode(base64js.toByteArray(resized.base64), { useTArray: true, maxMemoryUsageInMB: 96 });
+  const data = raw.data as Uint8Array;
+  const W = raw.width;
+  const H = raw.height;
+
+  const pxPerMm = W / OMR_GEOMETRY.PAGE_W_MM;
+
+  const debugData: DebugData = {
+    globalAnchors: [
+      { x: 0, y: 0 },
+      { x: W, y: 0 },
+      { x: 0, y: H },
+      { x: W, y: H },
+    ],
+    squadCheckboxes: [],
+    rows: [],
+  };
+
+  // ── ETAP 1: Zbliżenie i analiza fragmentu Zastępu ──────────────────────────
+  const squadResult = analyzeSquadSubRegion(data, W, H, pxPerMm);
+  debugData.squadCheckboxes = squadResult.debugCheckboxes;
+
+  // ── ETAP 2: Zbliżenie i analiza każdej kategorii osobno ───────────────────
+  const allItems: ScannedItem[] = [];
+
+  for (const block of CATEGORY_BLOCKS) {
+    const blockResult = analyzeCategoryBlock(data, W, H, block, pxPerMm);
+    allItems.push(...blockResult.items);
+    debugData.rows.push(...blockResult.rowDebugs);
+  }
+
+  return {
+    squadId: squadResult.squadId,
+    squadDots: squadResult.squadDots,
+    items: allItems,
+    debugData,
+  };
 }
 
-export function numberToBinaryDots(
-  num: number,
-  length: number = ID_DOT_COUNT
-): boolean[] {
-  return Array.from({ length }, (_, i) => (num >> (length - 1 - i) & 1) === 1);
-}
+export { numberToBinaryDots, binaryDotsToNumber } from '../constants/listTemplate';

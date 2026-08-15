@@ -1,278 +1,262 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { LIST_ITEMS, CATEGORIES, ID_DOT_COUNT } from '../constants/listTemplate';
+import {
+  LIST_ITEMS,
+  CATEGORIES,
+  CATEGORIES_FR,
+  ITEM_TRANSLATIONS_FR,
+} from '../constants/listTemplate';
 
-const CHECKBOXES_PER_ROW = 5;
-const COPIES = 3;
+const COPIES = 1;
 
-/*
- * Generuje jeden kwadracik □ jako element HTML
- */
-function checkbox(): string {
-  return `<span class="cb"></span>`;
+function checkbox(num: number, extraClass = ''): string {
+  return `<span class="cb ${extraClass}">${num}</span>`;
 }
 
-/*
- * Generuje wiersz kwadracików o podanej liczbie
- */
-function checkboxRow(count: number): string {
-  return Array.from({ length: count }, () => checkbox()).join('');
+function checkboxRow(count: number, extraClass = ''): string {
+  return Array.from({ length: count }, (_, i) => checkbox(i + 1, extraClass)).join('');
 }
 
-/*
- * Generuje HTML jednej kopii listy zaopatrzenia
- */
-function generateSingleListHtml(): string {
-  const categoryBlocks = CATEGORIES.map((cat) => {
-    const items = LIST_ITEMS.filter((li) => li.category === cat);
-    if (items.length === 0) return '';
+function renderColumn(colIndex: 1 | 2 | 3, lang: 'pl' | 'fr' = 'pl'): string {
+  const colCats = CATEGORIES.filter((cat) =>
+    LIST_ITEMS.some((li) => li.category === cat && li.column === colIndex)
+  );
 
-    const rows = items
-      .map(
-        (item) => `
-        <tr class="item-row">
-          <td class="item-name">${item.name}</td>
-          <td class="item-boxes">
-            ${checkboxRow(CHECKBOXES_PER_ROW)}
-            ${checkboxRow(CHECKBOXES_PER_ROW)}
-            ${checkboxRow(CHECKBOXES_PER_ROW)}
-          </td>
-          <td class="item-unit">/ ${item.unit}</td>
-        </tr>`
-      )
-      .join('');
+  return colCats
+    .map((cat) => {
+      const items = LIST_ITEMS.filter((li) => li.category === cat && li.column === colIndex);
+      const catDisplayName = lang === 'fr' ? (CATEGORIES_FR[cat] || cat) : cat;
 
-    return `
-      <tr class="cat-header">
-        <td colspan="3">${cat.toUpperCase()}</td>
-      </tr>
-      ${rows}`;
-  }).join('');
+      const rows = items
+        .map((item) => {
+          const maxDots = item.maxDots || 5;
+          const itemName = lang === 'fr' ? (ITEM_TRANSLATIONS_FR[item.id]?.name || item.name) : item.name;
+          const itemUnit = lang === 'fr' ? (ITEM_TRANSLATIONS_FR[item.id]?.unit || item.unit) : item.unit;
 
-  const idBoxes = checkboxRow(ID_DOT_COUNT);
+          return `
+        <div class="item">
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">${itemName}</span></div>
+          <div class="item-right">
+            <div class="boxes">${checkboxRow(maxDots)}</div>
+            <span class="unit">/ ${itemUnit}</span>
+          </div>
+        </div>`;
+        })
+        .join('');
+
+      return `
+        <div class="cat">
+          <span class="cat-name"><span class="timing-mark"></span>${catDisplayName}</span>
+        </div>
+        ${rows}`;
+    })
+    .join('');
+}
+
+function generateSingleListHtml(lang: 'pl' | 'fr' = 'pl'): string {
+  const isFr = lang === 'fr';
+
+  const squadLabel = isFr ? 'ID PATROUILLE :' : 'ID ZASTĘPU:';
+  const noteLabel = isFr
+    ? 'Cochez le code de votre patrouille (ex. Patrouille 5 = bulles 1 et 3)'
+    : 'Zamaluj kod swojego zastępu (np. Zastęp 5 = kółko 1 i 3)';
+
+  const bubblesHtml = Array.from({ length: 4 }, (_, i) => `<span class="squad-bubble">${i + 1}</span>`).join('');
+
+  const footerFill = isFr
+    ? 'Remplir les bulles <strong>●</strong> au stylo'
+    : 'Wypełnij kółka <strong>●</strong> długopisem';
+  const footerUnit = isFr ? '1 bulle = 1 unité' : '1 kółko = 1 jednostka';
+  const footerScan = isFr ? 'Scanner via <strong>FSE Logistic</strong>' : 'Skanuj przez <strong>FSE Logistic</strong>';
 
   return `
-    <div class="list-copy">
-      <div class="list-header">
-        <span class="brand">FSE Logistic</span>
-        <span class="list-title">Lista Zaopatrzenia</span>
+  <div class="list-page">
+    <div class="squad-row">
+      <span class="squad-label">${squadLabel}</span>
+      <div class="squad-bubbles">
+        ${bubblesHtml}
       </div>
+      <span class="squad-note">${noteLabel}</span>
+    </div>
 
-      <div class="squad-row">
-        <span class="squad-label">Zastęp</span>
-        <span class="squad-boxes">${idBoxes}</span>
-      </div>
+    <div class="columns">
+      <div class="col">${renderColumn(1, lang)}</div>
+      <div class="col">${renderColumn(2, lang)}</div>
+      <div class="col">${renderColumn(3, lang)}</div>
+    </div>
 
-      <table>
-        <colgroup>
-          <col class="col-name" />
-          <col class="col-boxes" />
-          <col class="col-unit" />
-        </colgroup>
-        <thead>
-          <tr class="table-head">
-            <th>Produkt</th>
-            <th>
-              <span class="head-row">Ilość (1 kw. =)</span>
-            </th>
-            <th>Jednostka</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${categoryBlocks}
-        </tbody>
-      </table>
-
-      <div class="footer-note">
-        Zamaluj długopisem kwadraciki ■ · Skanuj w FSE Logistic
-      </div>
-    </div>`;
+    <div class="footer">
+      <span>${footerFill}</span>
+      <span>&bull;</span>
+      <span>${footerUnit}</span>
+      <span>&bull;</span>
+      <span>${footerScan}</span>
+    </div>
+  </div>`;
 }
 
-/*
- * Generuje pełny HTML dokumentu PDF z ${COPIES} kopiami listy
- * Każda kopia na osobnej stronie (page-break-after)
- */
-function generateFullHtml(): string {
+export function generateFullHtml(lang: 'pl' | 'fr' = 'pl'): string {
+  const isFr = lang === 'fr';
+  const docTitle = isFr ? 'FSE Logistic – Feuille de Ravitaillement' : 'FSE Logistic – Lista Zaopatrzenia';
+
   const copies = Array.from({ length: COPIES }, (_, i) => {
     const isLast = i === COPIES - 1;
-    return `<div class="page${isLast ? '' : ' page-break'}">${generateSingleListHtml()}</div>`;
+    return `<div class="page${isLast ? '' : ' page-break'}">${generateSingleListHtml(lang)}</div>`;
   }).join('\n');
 
-  return `
-<!DOCTYPE html>
-<html lang="pl">
+  return `<!DOCTYPE html>
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
-  <title>FSE Logistic – Lista Zaopatrzenia</title>
+  <title>${docTitle}</title>
   <style>
-    @page {
-      size: A4 portrait;
-      margin: 10mm 12mm;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    @page { size: A4 portrait; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: 9pt;
-      color: #111;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-size: 7.8pt;
+      color: #0f172a;
       background: #fff;
-    }
-
-    .page {
-      width: 100%;
-    }
-
-    .page-break {
-      page-break-after: always;
-    }
-
-    /* ── Kwadracik ── */
-    .cb {
-      display: inline-block;
-      width: 4.5mm;
-      height: 4.5mm;
-      border: 1.2px solid #222;
-      margin: 0 0.5mm;
-      vertical-align: middle;
-      background: #fff;
-    }
-
-    /* ── Nagłówek kopii ── */
-    .list-copy {
-      padding: 0;
-    }
-
-    .list-header {
       display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      border-bottom: 2px solid #111;
-      padding-bottom: 3mm;
-      margin-bottom: 4mm;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .page { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+    .page-break { page-break-after: always; }
+
+    .list-page {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      background: #fff;
+      padding: 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
-    .brand {
-      font-size: 14pt;
-      font-weight: 900;
-      letter-spacing: -0.5pt;
-    }
-
-    .list-title {
-      font-size: 10pt;
-      font-weight: 600;
-      color: #444;
-    }
-
-    /* ── Wiersz ID zastępu ── */
     .squad-row {
       display: flex;
       align-items: center;
-      gap: 4mm;
-      margin-bottom: 5mm;
-      padding: 2.5mm 3mm;
-      border: 1.2px solid #ddd;
-      border-radius: 2mm;
-      background: #fafafa;
+      height: 8.5mm;
+      margin-bottom: 2.5mm;
+      padding: 0 4mm;
+      border: 1.2px solid #94a3b8;
+      border-radius: 1.5mm;
+      background: #f8fafc;
     }
-
-    .squad-label {
-      font-size: 10pt;
-      font-weight: 700;
-      min-width: 14mm;
-      color: #111;
-    }
-
-    .squad-boxes .cb {
-      width: 5mm;
-      height: 5mm;
-      margin: 0 0.8mm;
-    }
-
-    /* ── Tabela produktów ── */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .col-name  { width: 38%; }
-    .col-boxes { width: 47%; }
-    .col-unit  { width: 15%; }
-
-    .table-head th {
-      font-size: 7.5pt;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8pt;
-      color: #555;
-      padding: 2mm 2mm 1.5mm;
-      border-bottom: 1px solid #bbb;
-      text-align: left;
-    }
-
-    /* ── Nagłówek kategorii ── */
-    .cat-header td {
-      padding: 2.5mm 2mm 1mm;
-      font-size: 8pt;
+    .squad-label { font-size: 8.5pt; font-weight: 800; color: #0f172a; margin-right: 4mm; }
+    .squad-bubbles { display: flex; align-items: center; gap: 2.2mm; }
+    .squad-bubble {
+      width: 5.0mm;
+      height: 5.0mm;
+      border: 0.8px solid #475569;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6.5pt;
       font-weight: 800;
-      color: #333;
+      color: #334155;
+    }
+    .squad-note { font-size: 6.8pt; color: #64748b; margin-left: auto; font-style: italic; font-weight: 600; }
+
+    .columns {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0 3mm;
+    }
+    .col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .timing-mark {
+      width: 2.2mm;
+      height: 2.0mm;
+      background: #000;
+      border-radius: 0.2mm;
+      margin-right: 1.2mm;
+      flex-shrink: 0;
+    }
+
+    .cat {
+      height: 7.6mm;
+      font-size: 7.2pt;
+      font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 1.2pt;
-      border-top: 1px solid #ddd;
-      background: #f5f5f5;
+      color: #0f172a;
+      background: #e2e8f0;
+      border-top: 1px solid #94a3b8;
+      border-bottom: 1px solid #94a3b8;
+      padding: 0 1mm;
+      display: flex;
+      align-items: center;
     }
+    .cat-name { display: flex; align-items: center; flex: 1; overflow: hidden; white-space: nowrap; }
 
-    /* ── Wiersz produktu ── */
-    .item-row {
-      border-bottom: 0.5px solid #e8e8e8;
+    .item {
+      height: 7.6mm;
+      border-bottom: 0.4px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.2mm;
     }
-
+    .item-left { display: flex; align-items: center; flex: 1; min-width: 0; padding-right: 0.5mm; }
     .item-name {
-      padding: 2.5mm 2mm;
-      font-size: 9pt;
-      vertical-align: middle;
-      color: #111;
-    }
-
-    .item-boxes {
-      padding: 2mm 2mm;
+      font-size: 7.0pt;
+      font-weight: 600;
+      color: #1e293b;
       white-space: nowrap;
-      vertical-align: middle;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    .item-right { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
+    .boxes { display: flex; align-items: center; gap: 0.5mm; }
 
-    .item-boxes .cb {
-      width: 4mm;
-      height: 4mm;
-      margin: 0 0.4mm;
+    .cb {
+      width: 4.9mm;
+      height: 4.9mm;
+      border: 0.6px solid #888;
+      border-radius: 50%;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6.2pt;
+      font-weight: 700;
+      color: #777;
     }
-
-    /* ── 3 rzędy kwadracików: oddzielone małym odstępem ── */
-    .item-boxes .cb:nth-child(5n+1):not(:first-child) {
-      margin-left: 2mm;
-    }
-
-    .item-unit {
-      padding: 2mm 1mm;
-      font-size: 8pt;
-      color: #555;
-      vertical-align: middle;
+    .unit {
+      font-size: 5.8pt;
+      font-weight: 600;
+      color: #475569;
+      margin-left: 0.8mm;
+      width: 7.6mm;
+      text-align: left;
       white-space: nowrap;
     }
 
-    /* ── Stopka ── */
-    .footer-note {
-      margin-top: 4mm;
-      font-size: 7pt;
-      color: #999;
+    .footer {
+      height: 5mm;
+      margin-top: 2mm;
+      font-size: 6.8pt;
+      color: #64748b;
       text-align: center;
-      border-top: 0.5px solid #e0e0e0;
-      padding-top: 2mm;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3mm;
     }
+    .footer strong { color: #0f172a; }
   </style>
 </head>
 <body>
@@ -281,11 +265,8 @@ function generateFullHtml(): string {
 </html>`;
 }
 
-/*
- * Eksportuje wzór listy do PDF (3 kopie) i otwiera dialog udostępniania
- */
-export async function exportListTemplatePdf(): Promise<void> {
-  const html = generateFullHtml();
+export async function exportListTemplatePdf(lang: 'pl' | 'fr' = 'pl'): Promise<void> {
+  const html = generateFullHtml(lang);
 
   const { uri } = await Print.printToFileAsync({
     html,
@@ -296,7 +277,7 @@ export async function exportListTemplatePdf(): Promise<void> {
   if (canShare) {
     await Sharing.shareAsync(uri, {
       mimeType: 'application/pdf',
-      dialogTitle: 'Pobierz wzór listy FSE',
+      dialogTitle: lang === 'fr' ? 'Télécharger la liste FSE' : 'Pobierz wzór listy FSE',
       UTI: 'com.adobe.pdf',
     });
   }

@@ -10,8 +10,8 @@ export function useScans() {
   const refresh = useCallback(async () => {
     setLoading(true);
     const [s, sq] = await Promise.all([loadScans(), loadSquads()]);
-    setScans(s);
-    setSquads(sq);
+    setScans(s || []);
+    setSquads(sq || []);
     setLoading(false);
   }, []);
 

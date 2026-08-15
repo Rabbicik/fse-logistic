@@ -7,20 +7,27 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Scan, Squad, ScannedItem } from '../../types';
-import { LIST_ITEMS, CATEGORIES } from '../../constants/listTemplate';
+import { Scan, Squad } from '../../types';
+import { LIST_ITEMS, CATEGORIES, numberToBinaryDots } from '../../constants/listTemplate';
 import DotId from './DotId';
-import { numberToBinaryDots } from '../../services/imageAnalysis';
 
 interface Props {
   scan: Scan;
   squad?: Squad;
+  squads?: Squad[];
+  onSelectSquad?: (squadId: number) => void;
   onConfirm: () => void;
   onDiscard: () => void;
 }
 
-export default function ScanResult({ scan, squad, onConfirm, onDiscard }: Props) {
-  const dots = numberToBinaryDots(scan.squadId);
+export default function ScanResult({
+  scan,
+  squad,
+  squads,
+  onSelectSquad,
+  onConfirm,
+  onDiscard,
+}: Props) {
   const date = new Date(scan.scannedAt).toLocaleDateString('pl-PL', {
     day: '2-digit',
     month: '2-digit',
@@ -39,13 +46,47 @@ export default function ScanResult({ scan, squad, onConfirm, onDiscard }: Props)
             <Ionicons name="shield" size={14} color="#fff" />
             <Text style={styles.squadName}>{squad?.name ?? `ID: ${scan.squadId}`}</Text>
           </View>
-          <Text style={styles.date}>{date}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <DotId filled={numberToBinaryDots(scan.squadId)} size={12} filledColor={squad?.color ?? '#FF6B35'} />
+            <Text style={styles.date}>{date}</Text>
+          </View>
         </View>
 
-        <View style={styles.dotRow}>
-          <Text style={styles.dotLabel}>ID zastępu:</Text>
-          <DotId filled={dots} size={14} filledColor={squad?.color ?? '#FF6B35'} />
-        </View>
+        {squads && squads.length > 0 && onSelectSquad && (
+          <View style={styles.squadSelectorSection}>
+            <Text style={styles.squadSelectorLabel}>Wybierz zastęp:</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.squadChips}
+            >
+              {squads.map((sq) => {
+                const isSelected = sq.id === scan.squadId;
+                return (
+                  <TouchableOpacity
+                    key={sq.id}
+                    onPress={() => onSelectSquad(sq.id)}
+                    style={[
+                      styles.squadChip,
+                      isSelected
+                        ? { backgroundColor: sq.color, borderColor: sq.color }
+                        : { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.1)' },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.squadChipText,
+                        isSelected ? { color: '#fff', fontWeight: '800' } : { color: 'rgba(255,255,255,0.7)' },
+                      ]}
+                    >
+                      {sq.name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={styles.totalRow}>
           <Text style={styles.totalLabel}>Łącznie artykułów:</Text>
@@ -101,21 +142,20 @@ export default function ScanResult({ scan, squad, onConfirm, onDiscard }: Props)
             </View>
           );
         })}
-
         <View style={styles.spacer} />
       </ScrollView>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.discardBtn} onPress={onDiscard} activeOpacity={0.8}>
-          <Ionicons name="close" size={20} color="rgba(255,255,255,0.6)" />
+        <TouchableOpacity style={styles.discardBtn} onPress={onDiscard}>
+          <Ionicons name="trash-outline" size={18} color="rgba(255,255,255,0.6)" />
           <Text style={styles.discardText}>Odrzuć</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.confirmBtn, { backgroundColor: squad?.color ?? '#FF6B35' }]}
           onPress={onConfirm}
-          activeOpacity={0.85}
         >
-          <Ionicons name="checkmark" size={20} color="#fff" />
+          <Ionicons name="checkmark" size={18} color="#fff" />
           <Text style={styles.confirmText}>Zapisz listę</Text>
         </TouchableOpacity>
       </View>
@@ -150,41 +190,61 @@ const styles = StyleSheet.create({
   },
   squadName: {
     color: '#fff',
+    fontSize: 13,
     fontWeight: '700',
-    fontSize: 14,
   },
   date: {
     color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
   },
-  dotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  squadSelectorSection: {
+    gap: 6,
+    marginTop: 2,
   },
-  dotLabel: {
-    color: 'rgba(255,255,255,0.5)',
+  squadSelectorLabel: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  squadChips: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 2,
+  },
+  squadChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  squadChipText: {
     fontSize: 12,
+    fontWeight: '600',
   },
   totalRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   totalLabel: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
+    fontSize: 13,
   },
   totalValue: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '800',
   },
   scroll: {
     flex: 1,
+    padding: 20,
   },
   category: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    marginBottom: 24,
   },
   categoryTitle: {
     color: 'rgba(255,255,255,0.35)',

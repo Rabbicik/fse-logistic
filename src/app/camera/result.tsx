@@ -68,8 +68,7 @@ export default function ResultScreen() {
       router.replace('/lists');
     }
   };
-
-  const squad = squads.find((sq) => sq.id === scan?.squadId);
+  const squad = squads?.find((sq) => sq.id === scan?.squadId);
 
   if (loading) {
     return (
@@ -112,6 +111,10 @@ export default function ResultScreen() {
       <ScanResult
         scan={scan}
         squad={squad}
+        squads={squads}
+        onSelectSquad={(newSquadId) => {
+          setScan((prev) => (prev ? { ...prev, squadId: newSquadId } : null));
+        }}
         onConfirm={handleConfirm}
         onDiscard={handleDiscard}
       />

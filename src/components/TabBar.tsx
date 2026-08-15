@@ -46,6 +46,7 @@ export default function TabBar() {
     if (Platform.OS === 'android' && !permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
+        console.warn('[TabBar] Odmowa uprawnień do kamery na Androidzie');
         Alert.alert(
           'Brak dostępu do kamery',
           'Aby skanować listy, przyznaj dostęp do kamery w ustawieniach aplikacji.',
@@ -55,11 +56,19 @@ export default function TabBar() {
       }
     }
 
+    if (Platform.OS === 'web') {
+      console.log('[TabBar] Symulacja skanowania na platformie Web (Brak wsparcia dla DocumentScanner)');
+      Alert.alert('Symulacja PC', 'Na przeglądarce aparat nie działa w ten sam sposób. Użyj telefonu (Custom Dev Build) aby zeskanować dokument.');
+      return;
+    }
+
     try {
+      console.log('[TabBar] Uruchamianie DocumentScanner.scanDocument...');
       const scanResult = await DocumentScanner.scanDocument({
         croppedImageQuality: 90,
-        letUserAdjustCrop: true,
       });
+
+      console.log('[TabBar] Wynik DocumentScanner:', scanResult.status);
 
       if (
         scanResult.status === 'success' &&
@@ -67,8 +76,10 @@ export default function TabBar() {
         scanResult.scannedImages.length > 0
       ) {
         const uri = scanResult.scannedImages[0];
+        console.log('[TabBar] Udało się pobrać obraz:', uri);
 
         if (!uri) {
+          console.error('[TabBar] URI obrazu jest puste');
           Alert.alert('Błąd', 'Nie otrzymano zdjęcia ze skanera.');
           return;
         }
@@ -77,16 +88,29 @@ export default function TabBar() {
           pathname: '/camera/result',
           params: { uri },
         });
+      } else {
+        console.warn('[TabBar] Skanowanie anulowane lub nieudane:', scanResult);
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       if (message.includes('cancel') || message.includes('Cancel')) {
+        console.log('[TabBar] Skanowanie anulowane przez użytkownika.');
         return;
       }
-      console.error('[TabBar] DocumentScanner error:', message);
+      console.error('[TabBar] ERROR DocumentScanner crash:', err);
+      
+      if (message.includes('Google Play services')) {
+        Alert.alert(
+          'Brak usług Google Play',
+          'Skaner dokumentów wymaga aktualnych Usług Google Play (ML Kit). Funkcja ta może nie działać na emulatorach. Przetestuj na fizycznym urządzeniu z Androidem.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       Alert.alert(
         'Błąd skanera',
-        'Nie udało się uruchomić skanera dokumentów. Sprawdź czy aplikacja ma dostęp do kamery.',
+        `Nie udało się uruchomić skanera. Błąd: ${message}`,
         [{ text: 'OK' }]
       );
     }

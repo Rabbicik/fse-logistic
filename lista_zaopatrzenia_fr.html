@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>FSE Logistic – Lista Zaopatrzenia</title>
+  <title>FSE Logistic – Feuille de Ravitaillement</title>
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,7 +30,7 @@
       overflow: hidden;
     }
 
-    /* SEKCJA IDENTYFIKATORA ZASTĘPU (KOD BINARNY ID 1..15) */
+    /* SEKCJA IDENTYFIKATORA PATROUILLE (KOD BINARNY ID 1..15) */
     .squad-row {
       display: flex;
       align-items: center;
@@ -117,7 +117,7 @@
     .item-right { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
     .boxes { display: flex; align-items: center; gap: 0.5mm; }
 
-    /* KÓŁKA OMR (ODPOWIEDZI) - POWIĘKSZONE 4.9mm */
+    /* KÓŁKA OMR (ODPOWIEDZI) - 4.9mm */
     .cb {
       width: 4.9mm;
       height: 4.9mm;
@@ -158,16 +158,16 @@
 </head>
 <body>
   <div class="list-page">
-    <!-- SEKCJA IDENTYFIKATORA ZASTĘPU (KOD BINARNY 1..15) -->
+    <!-- SEKCJA IDENTYFIKATORA PATROUILLE (KOD BINARNY 1..15) -->
     <div class="squad-row">
-      <span class="squad-label">ID ZASTĘPU:</span>
+      <span class="squad-label">ID PATROUILLE :</span>
       <div class="squad-bubbles">
         <span class="squad-bubble">1</span>
         <span class="squad-bubble">2</span>
         <span class="squad-bubble">3</span>
         <span class="squad-bubble">4</span>
       </div>
-      <span class="squad-note">Zamaluj kod swojego zastępu (np. Zastęp 5 = kółko 1 i 3)</span>
+      <span class="squad-note">Cochez le code de votre patrouille (ex. Patrouille 5 = bulles 1 et 3)</span>
     </div>
 
     <!-- 3 KOLUMNY PRODUKTÓW -->
@@ -175,31 +175,31 @@
       <!-- KOLUMNA 1 -->
       <div class="col">
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Owoce</span>
+          <span class="cat-name"><span class="timing-mark"></span>FRUITS</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jabłka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pommes</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Banany</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Bananes</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Nektarynka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Nectarines</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Arbuz</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pastèque</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 1 kg</span>
@@ -207,122 +207,122 @@
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Warzywa</span>
+          <span class="cat-name"><span class="timing-mark"></span>LÉGUMES</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ziemniaki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pommes de terre</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cebula</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Oignons</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Marchew</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Carottes</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pietruszka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Panais / Persil</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pomidory</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Tomates</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ogórki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Concombres</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Poivrons</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Czosnek</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ail (tête)</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 gł.</span>
+            <span class="unit">/ 1 tête</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sałata mix</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Salade mix</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sałata (główka)</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Salade (pomme)</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pieczarki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Champignons</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 250 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Brokuły</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Brocoli</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Pieczywo</span>
+          <span class="cat-name"><span class="timing-mark"></span>BOULANGERIE</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Chleb</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pain</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Chleb tostowy</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pain de mie</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Bułki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Petits pains</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
+            <span class="unit">/ 4 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Tortilla</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Galettes / Tortillas</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
       </div>
@@ -330,52 +330,52 @@
       <!-- KOLUMNA 2 -->
       <div class="col">
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Mięso</span>
+          <span class="cat-name"><span class="timing-mark"></span>VIANDES</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pierś z kurczaka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Blanc de poulet</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mięso mielone</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Viande hachée</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Schab</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Côtes de porc</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Udka z kurczaka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cuisses de poulet</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Skrzydełka z kurczaka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ailes de poulet</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Wątróbka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Foie de volaille</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Boczek</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Lardons / Poitrine</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 200 g</span>
@@ -383,108 +383,108 @@
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Wędliny</span>
+          <span class="cat-name"><span class="timing-mark"></span>CHARCUTERIE</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Parówki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Saucisses Strasbourg</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
+            <span class="unit">/ 4 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Szynka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jambon blanc</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 150 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kiełbasa</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Saucisses fumées</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Nabiał</span>
+          <span class="cat-name"><span class="timing-mark"></span>PRODUITS LAITIERS</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mleko</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Lait</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 1 L</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Masło</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Beurre</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pc</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jajka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Œufs</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 4 szt.</span>
+            <span class="unit">/ 4 pcs</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ser żółty (plasterki)</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Fromage en tranches</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 150 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ser żółty (kostka)</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Fromage en bloc</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 250 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Twaróg</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Fromage blanc</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 250 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Śmietana 18%</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Crème fraîche 18%</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Śmietanka 30%</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Crème liquide 30%</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jogurt naturalny</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Yaourt nature</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Serek wiejski</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cottage cheese</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Jogurt smakowe</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Yaourts aux fruits</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 2 szt.</span>
+            <span class="unit">/ 2 pcs</span>
           </div>
         </div>
       </div>
@@ -492,80 +492,80 @@
       <!-- KOLUMNA 3 -->
       <div class="col">
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Produkty sypkie</span>
+          <span class="cat-name"><span class="timing-mark"></span>ÉPICERIE</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mąka pszenna</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Farine de blé</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 1 kg</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Cukier</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sucre</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 1 kg</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Makaron świderki</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pâtes torsades</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Makaron spaghetti</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Spaghetti</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ryż</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Riz</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kasza gryczana</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sarrasin</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kasza jęczmienna</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Orge perlé</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 400 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Płatki owsiane</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Flocons d'avoine</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Płatki na mleko</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Céréales</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Bułka tarta</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Chapelure</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Olej</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Huile</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 1 L</span>
@@ -573,126 +573,126 @@
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Konserwy</span>
+          <span class="cat-name"><span class="timing-mark"></span>CONSERVES</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Passata</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Coulis de tomates</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
             <span class="unit">/ 500 g</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Groszek</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Petits pois</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 boîte</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Kukurydza</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Maïs doux</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 boîte</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Tuńczyk</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Thon en boîte</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 boîte</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Fasola</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Haricots rouges</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 boîte</span>
           </div>
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Sosy</span>
+          <span class="cat-name"><span class="timing-mark"></span>SAUCES</span>
         </div>
         <div class="item">
           <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ketchup</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 flac.</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Majonez</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Mayonnaise</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Musztarda</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Moutarde</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 szt.</span>
+            <span class="unit">/ 1 pot</span>
           </div>
         </div>
 
         <div class="cat">
-          <span class="cat-name"><span class="timing-mark"></span>Przyprawy</span>
+          <span class="cat-name"><span class="timing-mark"></span>ÉPICES</span>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sól</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Sel</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Pieprz</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Poivre</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka słodka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Paprika doux</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Papryka ostra</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Paprika fort</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Czosnek granulowany</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Ail moulu</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Zioła prowansalskie</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Herbes de Provence</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Oregano</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Origan</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
         <div class="item">
-          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Przyprawa do kurczaka</span></div>
+          <div class="item-left"><span class="timing-mark"></span><span class="item-name">Épices poulet</span></div>
           <div class="item-right">
             <div class="boxes"><span class="cb">1</span><span class="cb">2</span><span class="cb">3</span><span class="cb">4</span><span class="cb">5</span></div>
-            <span class="unit">/ 1 op.</span>
+            <span class="unit">/ 1 pqt</span>
           </div>
         </div>
       </div>
@@ -700,11 +700,11 @@
 
     <!-- FOOTER -->
     <div class="footer">
-      <span>Wypełnij kółka <strong>●</strong> długopisem</span>
+      <span>Remplir les bulles <strong>●</strong> au stylo</span>
       <span>&bull;</span>
-      <span>1 kółko = 1 jednostka</span>
+      <span>1 bulle = 1 unité</span>
       <span>&bull;</span>
-      <span>Skanuj przez <strong>FSE Logistic</strong></span>
+      <span>Scanner via <strong>FSE Logistic</strong></span>
     </div>
   </div>
 </body>
