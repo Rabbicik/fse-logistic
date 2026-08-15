@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useScans } from '../hooks/useScans';
 import { Scan, Squad } from '../types';
-import { LIST_ITEMS } from '../constants/listTemplate';
+import { LIST_ITEMS, formatTotalQuantity } from '../constants/listTemplate';
 import { numberToBinaryDots } from '../services/imageAnalysis';
 import DotId from '../components/ui/DotId';
 
@@ -30,7 +30,8 @@ function ScanCard({ scan, squad }: ScanCardProps) {
     hour: '2-digit',
     minute: '2-digit',
   });
-  const totalItems = scan.items.reduce((s, i) => s + i.quantity, 0);
+  /* Liczba pozycji — sumowanie g + szt. + L w jedną liczbę nie ma sensu */
+  const totalItems = scan.items.filter((i) => i.quantity > 0).length;
 
   return (
     <View style={[styles.card, { borderLeftColor: squad?.color ?? '#FF6B35' }]}>
@@ -40,7 +41,7 @@ function ScanCard({ scan, squad }: ScanCardProps) {
           <DotId filled={dots} size={10} filledColor={squad?.color ?? '#FF6B35'} />
         </View>
         <View style={[styles.badge, { backgroundColor: squad?.color ?? '#FF6B35' }]}>
-          <Text style={styles.badgeText}>{totalItems} szt.</Text>
+          <Text style={styles.badgeText}>{totalItems} poz.</Text>
         </View>
       </View>
 
@@ -55,7 +56,7 @@ function ScanCard({ scan, squad }: ScanCardProps) {
                 <View style={styles.chip}>
                   <Text style={styles.chipText}>{item?.name ?? si.itemId}</Text>
                   <Text style={[styles.chipQty, { color: squad?.color ?? '#FF6B35' }]}>
-                    ×{si.quantity}
+                    {item ? formatTotalQuantity(item, si.quantity) : `×${si.quantity}`}
                   </Text>
                 </View>
               </View>

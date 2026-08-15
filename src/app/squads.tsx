@@ -13,14 +13,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useScans } from '../hooks/useScans';
 import { Squad } from '../types';
-import { LIST_ITEMS, SQUAD_COLORS, numberToBinaryDots } from '../constants/listTemplate';
+import {
+  LIST_ITEMS,
+  SQUAD_COLORS,
+  numberToBinaryDots,
+  formatTotalQuantity,
+} from '../constants/listTemplate';
 import DotId from '../components/ui/DotId';
 
 interface SquadSummary {
   squad: Squad;
   scanCount: number;
   totalItems: number;
-  itemTotals: { name: string; qty: number }[];
+  itemTotals: { name: string; qty: number; amount: string }[];
 }
 
 export default function SquadsScreen() {
@@ -31,10 +36,6 @@ export default function SquadsScreen() {
   const summaries = useMemo<SquadSummary[]>(() => {
     return (squads || []).map((sq) => {
       const squadScans = (scans || []).filter((s) => s.squadId === sq.id);
-      const totalItems = squadScans.reduce(
-        (sum, s) => sum + s.items.reduce((ss, i) => ss + i.quantity, 0),
-        0
-      );
 
       const itemMap = new Map<string, number>();
       for (const scan of squadScans) {
@@ -43,9 +44,15 @@ export default function SquadsScreen() {
         }
       }
 
+      /* Ilości końcowe liczone z dotValue (rozmiar jednostki na kółko);
+       * totalItems = liczba różnych artykułów, bo suma g + szt. + L nie ma sensu */
       const itemTotals = LIST_ITEMS.filter((li) => (itemMap.get(li.id) ?? 0) > 0)
-        .map((li) => ({ name: li.name, qty: itemMap.get(li.id) ?? 0 }))
+        .map((li) => {
+          const dots = itemMap.get(li.id) ?? 0;
+          return { name: li.name, qty: dots, amount: formatTotalQuantity(li, dots) };
+        })
         .sort((a, b) => b.qty - a.qty);
+      const totalItems = itemTotals.length;
 
       return { squad: sq, scanCount: squadScans.length, totalItems, itemTotals };
     });
@@ -136,7 +143,7 @@ export default function SquadsScreen() {
                   <View key={it.name} style={styles.itemRow}>
                     <Text style={styles.itemName}>{it.name}</Text>
                     <Text style={[styles.itemQty, { color: item.squad.color }]}>
-                      {it.qty}
+                      {it.amount}
                     </Text>
                   </View>
                 ))}

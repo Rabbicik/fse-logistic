@@ -58,6 +58,26 @@ export function computeQuantity(dots: number, item: ListItem): number {
   return dots * item.dotValue;
 }
 
+/** Jednostka bez wiodącej liczby: '2 szt.' → 'szt.', '400 g' → 'g' */
+export function unitBase(unit: string): string {
+  return unit.replace(/^[\d.,]+\s*/, '');
+}
+
+/*
+ * Formatuje KOŃCOWĄ ilość do kupienia: kółka × dotValue + jednostka.
+ * Np. Jabłka ('2 szt.', dotValue 2) przy 3 kółkach → '6 szt.'
+ * Gramy od 1000 wzwyż pokazujemy w kg ('1,5 kg').
+ */
+export function formatTotalQuantity(item: ListItem, dots: number): string {
+  const total = computeQuantity(dots, item);
+  const base = unitBase(item.unit);
+  if (base === 'g' && total >= 1000) {
+    const kg = Math.round((total / 1000) * 100) / 100;
+    return `${String(kg).replace('.', ',')} kg`;
+  }
+  return `${total} ${base}`;
+}
+
 /*
  * Konwersja kodu binarnego 4 kropek (1, 2, 4, 8) na numer zastępu 1..15
  */
