@@ -1,6 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { ShoppingList, Squad, ListItem } from '../types';
+import { ShoppingList, ListItem } from '../types';
 import { LIST_ITEMS, CATEGORIES, formatTotalQuantity } from '../constants/listTemplate';
 
 export interface AggregatedItem {
@@ -30,11 +30,9 @@ export function aggregateList(list: ShoppingList): AggregatedItem[] {
 /*
  * Buduje treść pliku .txt: zagregowane ilości pogrupowane wg kategorii.
  */
-export function buildTxt(list: ShoppingList, squads: Squad[]): string {
+export function buildTxt(list: ShoppingList): string {
   const agg = aggregateList(list);
-  const scannedSquads = [...list.scans]
-    .map((s) => squads.find((sq) => sq.id === s.squadId)?.name ?? `ID ${s.squadId}`)
-    .sort((a, b) => a.localeCompare(b, 'pl'));
+  const scannedSquads = [...list.scans].map((s) => s.squadId).sort((a, b) => a - b);
 
   const created = new Date(list.createdAt);
   const stamp = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}-${String(created.getDate()).padStart(2, '0')}`;
@@ -77,8 +75,8 @@ export function txtFileName(list: ShoppingList): string {
  * Zapisuje zagregowaną listę do pliku .txt i otwiera arkusz udostępniania
  * (zapis do Plików, wysyłka itd.).
  */
-export async function exportListTxt(list: ShoppingList, squads: Squad[]): Promise<void> {
-  const content = buildTxt(list, squads);
+export async function exportListTxt(list: ShoppingList): Promise<void> {
+  const content = buildTxt(list);
   const file = new File(Paths.cache, txtFileName(list));
   if (file.exists) file.delete();
   file.create();

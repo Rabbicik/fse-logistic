@@ -55,7 +55,7 @@ export default function ListsScreen() {
   const handleExportTxt = useCallback(async () => {
     if (!activeList) return;
     try {
-      await exportListTxt(activeList, squads);
+      await exportListTxt(activeList);
     } catch {
       Alert.alert('Błąd', 'Nie udało się wyeksportować listy do TXT');
     }
