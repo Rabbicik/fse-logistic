@@ -16,7 +16,7 @@ import ScanResult from '../../components/ui/ScanResult';
 export default function ResultScreen() {
   const params = useLocalSearchParams<{ uri: string }>();
   const router = useRouter();
-  const { squads, addScan } = useScans();
+  const { squads, addScan, hasScanForSquad, activeList } = useScans();
 
   const [loading, setLoading] = useState(true);
   const [scan, setScan] = useState<Scan | null>(null);
@@ -54,11 +54,29 @@ export default function ResultScreen() {
     }
   }
 
-  const handleConfirm = async () => {
+  const saveAndClose = async () => {
     if (!scan) return;
-    await addScan(scan);
+    await addScan(scan); // nadpisuje wcześniejszy skan tego zastępu
     router.dismissAll();
     router.replace('/lists');
+  };
+
+  const handleConfirm = async () => {
+    if (!scan) return;
+    // Jeden skan na zastęp w liście — ponowny skan zastępuje poprzedni
+    if (hasScanForSquad(scan.squadId)) {
+      const squadName = squads?.find((sq) => sq.id === scan.squadId)?.name ?? `ID ${scan.squadId}`;
+      Alert.alert(
+        'Zastęp już zeskanowany',
+        `„${squadName}" jest już na liście „${activeList?.name ?? ''}". Poprzedni skan zostanie zastąpiony tym nowym.`,
+        [
+          { text: 'Anuluj', style: 'cancel' },
+          { text: 'Zastąp', style: 'destructive', onPress: saveAndClose },
+        ]
+      );
+      return;
+    }
+    await saveAndClose();
   };
 
   const handleDiscard = () => {
