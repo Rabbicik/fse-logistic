@@ -8,7 +8,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Scan, Squad } from '../../types';
-import { LIST_ITEMS, CATEGORIES, numberToBinaryDots } from '../../constants/listTemplate';
+import {
+  LIST_ITEMS,
+  CATEGORIES,
+  numberToBinaryDots,
+  formatTotalQuantity,
+} from '../../constants/listTemplate';
 import DotId from './DotId';
 
 interface Props {
@@ -36,7 +41,9 @@ export default function ScanResult({
     minute: '2-digit',
   });
 
-  const totalItems = scan.items.reduce((sum, i) => sum + i.quantity, 0);
+  /* Liczba pozycji na liście — sumowanie ilości w różnych jednostkach
+   * (g + szt. + L) nie ma sensu, więc liczymy odczytane pozycje. */
+  const totalItems = scan.items.filter((i) => i.quantity > 0).length;
   const squadUnknown = scan.squadId === 0;
 
   /* Wiersz o niskiej pewności odczytu OMR — pokaż go i oznacz do weryfikacji */
@@ -96,7 +103,7 @@ export default function ScanResult({
         )}
 
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Łącznie artykułów:</Text>
+          <Text style={styles.totalLabel}>Pozycji na liście:</Text>
           <Text style={[styles.totalValue, { color: squad?.color ?? '#FF6B35' }]}>
             {totalItems}
           </Text>
@@ -149,7 +156,7 @@ export default function ScanResult({
                         ))}
                       </View>
                       <Text style={[styles.qty, { color: squad?.color ?? '#FF6B35' }]}>
-                        ×{scanned.quantity}
+                        {formatTotalQuantity(li, scanned.quantity)}
                       </Text>
                     </View>
                   </View>
