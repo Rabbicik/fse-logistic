@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "lib": ["es2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "rootDir": "../src",
+    "outDir": "../.omr-test-build"
+  },
+  "files": ["../src/services/omrCore.ts"]
+}

@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
 import { useCameraPermissions } from 'expo-camera';
+import * as DocumentPicker from 'expo-document-picker';
 import DocumentScanner from 'react-native-document-scanner-plugin';
 
 export default function TabBar() {
@@ -116,6 +117,28 @@ export default function TabBar() {
     }
   }, [router, fabRotate, permission, requestPermission]);
 
+  /*
+   * Długie przytrzymanie FAB: import istniejącego zdjęcia (galeria / pliki).
+   * Analizator sam znajduje znaczniki narożne i prostuje perspektywę,
+   * więc zwykłe zdjęcie kartki działa tak samo jak skan.
+   */
+  const handleFabLongPress = useCallback(async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'image/*',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (result.canceled || !result.assets || result.assets.length === 0) return;
+      const uri = result.assets[0].uri;
+      if (!uri) return;
+      router.push({ pathname: '/camera/result', params: { uri } });
+    } catch (err) {
+      console.error('[TabBar] Błąd wyboru zdjęcia:', err);
+      Alert.alert('Błąd', 'Nie udało się wczytać zdjęcia.');
+    }
+  }, [router]);
+
   const handleListsPress = useCallback(() => {
     router.push('/lists');
   }, [router]);
@@ -180,6 +203,8 @@ export default function TabBar() {
         <TouchableOpacity
           style={styles.fab}
           onPress={handleFabPress}
+          onLongPress={handleFabLongPress}
+          delayLongPress={400}
           activeOpacity={0.9}
         >
           <Animated.View style={{ transform: [{ rotate: fabSpin }] }}>

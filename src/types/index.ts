@@ -15,6 +15,8 @@ export interface ScannedItem {
   quantity: number;
   totalQuantity: number;
   filled: boolean[];
+  /** 0..1 — pewność odczytu OMR tego wiersza (brak = skan sprzed v3) */
+  confidence?: number;
 }
 
 export interface Scan {
