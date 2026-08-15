@@ -1,41 +1,46 @@
 # Architecture
 
 ## Stack technologiczny
-Expo ~57.0.7, React Native 0.86, TypeScript, expo-router (file-based), AsyncStorage, expo-print, expo-sharing
+Expo ~57, React Native 0.86, TypeScript, expo-router (file-based), AsyncStorage, expo-print, expo-sharing, react-native-document-scanner-plugin (ML Kit), jpeg-js
+
+## Skanowanie OMR (v3)
+Jedno źródło prawdy geometrii: `scripts/generate_template.js` generuje z tych samych stałych
+szablony wydruku (`lista_zaopatrzenia*.html`, pozycjonowanie absolutne w mm — niezależne od fontów),
+geometrię dla analizatora (`src/constants/omrGeometry.gen.ts`) oraz HTML dla expo-print
+(`src/services/templateHtml.gen.ts`). Analizator (`src/services/omrCore.ts`) wykrywa 4 znaczniki
+narożne, liczy homografię mm→px (usuwa perspektywę/kadrowanie), orientację rozstrzyga po paskach
+taktujących, a kółka ocenia względem pozostałych w wierszu (odporność na cień/ołówek/cyfry w kółkach).
+Wynik ma per-wiersz confidence; `squadId = 0` znaczy „nie rozpoznano” (użytkownik wybiera ręcznie).
+Test regresyjny: `npm run test:omr` (fixtures w `scripts/fixtures/`). Diagnoza historyczna: `omr-diagnosis.md`.
 
 ## Drzewo plików
-- /src/app/_layout.tsx: Root layout — Stack Navigator + custom BottomTabs overlay, dark theme
-- /src/app/index.tsx: Ekran Zastępów — lista PatrolCard, modal dodawania zastępu
-- /src/app/lists.tsx: Zbiorcza lista zakupów — pogrupowana wg kategorii, przyciski PDF/Drukuj/Udostępnij
-- /src/app/scan.tsx: (Dawniej Skanuj) Dodaj produkty — formularz z 9 kategoriami do ręcznego dodawania
-- /src/app/patrol-detail.tsx: Szczegóły zastępu — zakładki list, edycja kropeczek, ręczne dodawanie (z wyborem jednostki)
-- /src/components/BottomTabs.tsx: Własny tab bar z floating button "Dodaj"
-- /src/components/FSELogo.tsx: Komponent logo FSE (fse.png)
-- /src/components/ui/DotRating.tsx: 8 animowanych kropeczek — obsługuje g/szt/l
-- /src/components/ui/CategorySection.tsx: Zwijana sekcja kategorii — unit-aware podsumowanie
-- /src/components/ui/ProductItem.tsx: Pozycja artykułu z DotRating i unit przekazanym z kategorii
-- /src/components/ui/PatrolCard.tsx: Karta zastępu z meta-danymi
-- /src/components/ui/ShoppingListItem.tsx: Pozycja zbiorczej listy z formatowaniem jednostek
-- /src/constants/categories.ts: 9 kategorii — każda z defaultUnit (g/szt/l) i quantityPerDot
-- /src/constants/config.ts: Podstawowa konfiguracja (nazwa aplikacji itp.)
-- /src/hooks/usePatrols.ts: Hook CRUD dla zastępów + list + kropeczek
-- /src/services/storage.ts: AsyncStorage wrapper
-- /src/services/listGenerator.ts: Agregacja wg unit (szt sumują się jako szt, g jako g)
-- /src/services/pdfExport.ts: Generuje HTML→PDF przez expo-print, udostępnia przez expo-sharing
-- /src/types/index.ts: UnitType ('g'|'szt'|'l'), formatQuantity(), ProductEntry (z unit), ShoppingItem
-- /src/assets/fse.png: Logo FSE
-- /app.json: Konfiguracja Expo — ikona FSE, dark mode, usunięte kamery
+- /src/app/_layout.tsx: Root layout — Stack + TabBar, dark theme
+- /src/app/lists.tsx: Zbiorcza lista zakupów, eksport PDF szablonu
+- /src/app/squads.tsx: Zastępy — statystyki skanów
+- /src/app/camera/result.tsx: Wynik skanowania → ScanResult (zapis/odrzucenie)
+- /src/components/TabBar.tsx: Tab bar + FAB: tap = skaner dokumentów, przytrzymanie = zdjęcie z plików
+- /src/components/VisualDebugger.tsx: Nakładka debug (znaczniki, wiersze, kółka) na zdjęcie skanu
+- /src/components/ui/ScanResult.tsx: Podgląd wyniku, wybór zastępu, oznaczanie wierszy o niskiej pewności
+- /src/components/ui/DotId.tsx: Wizualizacja 4-bitowego kodu zastępu
+- /src/constants/listItems.json: KATALOG ARTYKUŁÓW (PL/FR, jednostki, dotValue) — źródło danych dla generatora i aplikacji
+- /src/constants/listTemplate.ts: LIST_ITEMS/CATEGORIES z listItems.json + helpery kodu binarnego
+- /src/constants/omrGeometry.gen.ts: GENEROWANE współrzędne OMR — nie edytować ręcznie
+- /src/services/omrCore.ts: Czysty rdzeń OMR (fiducials → homografia → ocena względna) — testowalny w Node
+- /src/services/imageAnalysis.ts: Warstwa Expo: decode/resize/rotacja → omrCore
+- /src/services/pdfExport.ts: Druk/udostępnianie szablonu (templateHtml.gen.ts)
+- /src/services/templateHtml.gen.ts: GENEROWANY HTML szablonu — nie edytować ręcznie
+- /src/services/storage.ts: AsyncStorage wrapper (skany, zastępy)
+- /scripts/generate_template.js: GENERATOR szablonu + geometrii (uruchom po każdej zmianie listy/układu, potem generate_pdf.js)
+- /scripts/generate_pdf.js: HTML → PDF (puppeteer), obie wersje językowe
+- /scripts/test_omr.mjs: Test regresyjny OMR na zdjęciach referencyjnych
 
-
-
-## Mapa zależności
-index.tsx -> usePatrols -> StorageService -> AsyncStorage
-patrol-detail.tsx -> usePatrols, CategorySection -> ProductItem -> DotRating
-scan.tsx -> ImagePicker, VisionApiService -> Gemini API, usePatrols
-lists.tsx -> usePatrols, ListGeneratorService -> ShoppingListItemCard
-BottomTabs -> expo-router (usePathname, useRouter)
+## Przepływ zmiany szablonu
+1. Edytuj `src/constants/listItems.json` (artykuły) lub `scripts/generate_template.js` (układ/geometria)
+2. `npm run generate:template` → odświeża HTML + oba pliki .gen.ts
+3. `node scripts/generate_pdf.js` → odświeża PDF-y w repo
+4. `npm run test:omr` — fixtures wymagają regeneracji przy zmianie geometrii (patrz scripts/fixtures/)
+5. Wydrukuj nowe arkusze — stare wydruki (bez znaczników narożnych) nie są wspierane
 
 ## Dług techniczny / Wrażliwe punkty
-- /src/constants/config.ts: GEMINI_API_KEY jest pusty — USE_MOCK_ANALYSIS=true domyślnie
-- /src/app/patrol-detail.tsx: Ręczne dodawanie produktów ma tymczasowy workaround — wymaga refaktoru
-- /src/services/visionApi.ts: Mock zwraca stałe dane — do wymiany po podaniu klucza API
+- Fixtures testowe są związane z geometrią v3 — zmiana układu wymaga ich ponownego wygenerowania
+- VisualDebugger nie jest podpięty do żadnego ekranu (do użycia przy diagnozie w terenie)

@@ -1,0 +1,345 @@
+{
+ "squadId": 11,
+ "items": [
+  {
+   "index": 0,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 1,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 2,
+   "quantity": 1,
+   "style": "tick"
+  },
+  {
+   "index": 3,
+   "quantity": 4,
+   "style": "fill"
+  },
+  {
+   "index": 4,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 5,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 6,
+   "quantity": 4,
+   "style": "fill"
+  },
+  {
+   "index": 7,
+   "quantity": 4,
+   "style": "fill"
+  },
+  {
+   "index": 8,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 9,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 10,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 11,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 12,
+   "quantity": 5,
+   "style": "tick"
+  },
+  {
+   "index": 13,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 14,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 15,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 16,
+   "quantity": 3,
+   "style": "fill"
+  },
+  {
+   "index": 17,
+   "quantity": 2,
+   "style": "tick"
+  },
+  {
+   "index": 18,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 19,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 20,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 21,
+   "quantity": 4,
+   "style": "fill"
+  },
+  {
+   "index": 22,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 23,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 24,
+   "quantity": 5,
+   "style": "tick"
+  },
+  {
+   "index": 25,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 26,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 27,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 28,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 29,
+   "quantity": 1,
+   "style": "tick"
+  },
+  {
+   "index": 30,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 31,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 32,
+   "quantity": 3,
+   "style": "tick"
+  },
+  {
+   "index": 33,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 34,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 35,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 36,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 37,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 38,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 39,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 40,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 41,
+   "quantity": 2,
+   "style": "tick"
+  },
+  {
+   "index": 42,
+   "quantity": 5,
+   "style": "tick"
+  },
+  {
+   "index": 43,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 44,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 45,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 46,
+   "quantity": 3,
+   "style": "tick"
+  },
+  {
+   "index": 47,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 48,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 49,
+   "quantity": 4,
+   "style": "fill"
+  },
+  {
+   "index": 50,
+   "quantity": 1,
+   "style": "tick"
+  },
+  {
+   "index": 51,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 52,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 53,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 54,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 55,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 56,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 57,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 58,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 59,
+   "quantity": 1,
+   "style": "fill"
+  },
+  {
+   "index": 60,
+   "quantity": 3,
+   "style": "fill"
+  },
+  {
+   "index": 61,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 62,
+   "quantity": 5,
+   "style": "fill"
+  },
+  {
+   "index": 63,
+   "quantity": 2,
+   "style": "fill"
+  },
+  {
+   "index": 64,
+   "quantity": 5,
+   "style": "tick"
+  },
+  {
+   "index": 65,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 66,
+   "quantity": 0,
+   "style": "none"
+  },
+  {
+   "index": 67,
+   "quantity": 1,
+   "style": "tick"
+  }
+ ]
+}

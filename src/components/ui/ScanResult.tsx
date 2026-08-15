@@ -37,14 +37,21 @@ export default function ScanResult({
   });
 
   const totalItems = scan.items.reduce((sum, i) => sum + i.quantity, 0);
+  const squadUnknown = scan.squadId === 0;
+
+  /* Wiersz o niskiej pewności odczytu OMR — pokaż go i oznacz do weryfikacji */
+  const isLowConfidence = (si?: { confidence?: number }) =>
+    si?.confidence !== undefined && si.confidence < 0.55;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View style={[styles.squadBadge, { backgroundColor: squad?.color ?? '#FF6B35' }]}>
-            <Ionicons name="shield" size={14} color="#fff" />
-            <Text style={styles.squadName}>{squad?.name ?? `ID: ${scan.squadId}`}</Text>
+          <View style={[styles.squadBadge, { backgroundColor: squadUnknown ? '#64748B' : squad?.color ?? '#FF6B35' }]}>
+            <Ionicons name={squadUnknown ? 'help' : 'shield'} size={14} color="#fff" />
+            <Text style={styles.squadName}>
+              {squadUnknown ? 'Nie rozpoznano zastępu' : squad?.name ?? `ID: ${scan.squadId}`}
+            </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <DotId filled={numberToBinaryDots(scan.squadId)} size={12} filledColor={squad?.color ?? '#FF6B35'} />
@@ -102,7 +109,7 @@ export default function ScanResult({
           const catScanned = catItems.map((li) =>
             scan.items.find((si) => si.itemId === li.id)
           );
-          const hasAny = catScanned.some((si) => si && si.quantity > 0);
+          const hasAny = catScanned.some((si) => si && (si.quantity > 0 || isLowConfidence(si)));
 
           if (!hasAny) return null;
 
@@ -111,10 +118,19 @@ export default function ScanResult({
               <Text style={styles.categoryTitle}>{cat}</Text>
               {catItems.map((li) => {
                 const scanned = scan.items.find((si) => si.itemId === li.id);
-                if (!scanned || scanned.quantity === 0) return null;
+                if (!scanned || (scanned.quantity === 0 && !isLowConfidence(scanned))) return null;
+                const lowConf = isLowConfidence(scanned);
 
                 return (
                   <View key={li.id} style={styles.itemRow}>
+                    {lowConf && (
+                      <Ionicons
+                        name="alert-circle"
+                        size={15}
+                        color="#F4D35E"
+                        style={{ marginRight: 6 }}
+                      />
+                    )}
                     <Text style={styles.itemName}>{li.name}</Text>
                     <View style={styles.itemRight}>
                       <View style={styles.dotsPreview}>
@@ -152,11 +168,17 @@ export default function ScanResult({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.confirmBtn, { backgroundColor: squad?.color ?? '#FF6B35' }]}
+          style={[
+            styles.confirmBtn,
+            { backgroundColor: squadUnknown ? 'rgba(255,255,255,0.12)' : squad?.color ?? '#FF6B35' },
+          ]}
           onPress={onConfirm}
+          disabled={squadUnknown}
         >
           <Ionicons name="checkmark" size={18} color="#fff" />
-          <Text style={styles.confirmText}>Zapisz listę</Text>
+          <Text style={styles.confirmText}>
+            {squadUnknown ? 'Najpierw wybierz zastęp' : 'Zapisz listę'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
