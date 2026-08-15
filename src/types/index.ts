@@ -34,6 +34,17 @@ export interface Squad {
   color: string;
 }
 
+/*
+ * Nazwana lista zakupów (np. jedna dziennie). Zawiera maksymalnie jeden
+ * skan na zastęp — ponowny skan tego samego zastępu nadpisuje poprzedni.
+ */
+export interface ShoppingList {
+  id: string;
+  name: string; // np. 'lista_zakupów_20260815'
+  createdAt: string;
+  scans: Scan[];
+}
+
 export interface CropPoint {
   x: number;
   y: number;

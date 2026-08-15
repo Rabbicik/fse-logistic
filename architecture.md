@@ -15,7 +15,7 @@ Test regresyjny: `npm run test:omr` (fixtures w `scripts/fixtures/`). Diagnoza h
 
 ## Drzewo plików
 - /src/app/_layout.tsx: Root layout — Stack + TabBar, dark theme
-- /src/app/lists.tsx: Zbiorcza lista zakupów, eksport PDF szablonu
+- /src/app/lists.tsx: Aktywna nazwana lista zakupów — agregacja wg kategorii, przełącznik list, nowa lista (domyślnie lista_zakupów_RRRRMMDD), eksport TXT + wzór PDF
 - /src/app/squads.tsx: Zastępy — statystyki skanów
 - /src/app/camera/result.tsx: Wynik skanowania → ScanResult (zapis/odrzucenie)
 - /src/components/TabBar.tsx: Tab bar + FAB: tap = skaner dokumentów, przytrzymanie = zdjęcie z plików
@@ -29,7 +29,9 @@ Test regresyjny: `npm run test:omr` (fixtures w `scripts/fixtures/`). Diagnoza h
 - /src/services/imageAnalysis.ts: Warstwa Expo: decode/resize/rotacja → omrCore
 - /src/services/pdfExport.ts: Druk/udostępnianie szablonu (templateHtml.gen.ts)
 - /src/services/templateHtml.gen.ts: GENEROWANY HTML szablonu — nie edytować ręcznie
-- /src/services/storage.ts: AsyncStorage wrapper (skany, zastępy)
+- /src/services/storage.ts: AsyncStorage wrapper (nazwane listy zakupów + aktywna lista + zastępy; migracja starych skanów)
+- /src/services/listExport.ts: Agregacja listy (suma kółek × dotValue per artykuł) + eksport .txt przez arkusz udostępniania
+- /src/hooks/useScans.ts: Stan list zakupów — jeden skan na zastęp w liście, ponowny skan nadpisuje (maks. 15 zastępów, 4-bitowy kod)
 - /scripts/generate_template.js: GENERATOR szablonu + geometrii (uruchom po każdej zmianie listy/układu, potem generate_pdf.js)
 - /scripts/generate_pdf.js: HTML → PDF (puppeteer), obie wersje językowe
 - /scripts/test_omr.mjs: Test regresyjny OMR na zdjęciach referencyjnych
